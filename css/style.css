@@ -1,0 +1,117 @@
+@import url(https://fonts.googleapis.com/css?family=Inconsolata);
+@import url(https://fonts.googleapis.com/css?family=Playfair+Display:700);
+
+.content {
+  margin: auto;
+  max-width: 980px;
+  min-width: 300px;
+  padding: 10px;
+}
+
+body {
+  background: #eee;
+}
+
+.email {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    z-index: -1;
+}
+
+h3 {
+  display: block;
+  font-family: 'Inconsolata', Helvetica, serif;
+  font-size: 14px;
+  color: #333333;
+  margin-top: 40px;
+  max-width: 980px;
+  min-width: 500px;
+  padding: 0px;
+  letter-spacing: 3px;
+}
+
+.linkunderline {
+text-decoration: underline;
+}
+
+h2 {
+  display: block;
+  font-family: 'Inconsolata', Helvetica, serif;
+  font-size: 14px;
+  color: #333333;
+  margin-top: 20px;
+  max-width: 980px;
+  min-width: 300px;
+  padding: 0px;
+  letter-spacing: 3px;
+}
+
+h2 a {
+  text-decoration: underline;
+  color: #333333;
+}
+
+.header {
+  color: rgba(28, 190, 131, 1);
+  font-family: 'Playfair Display', sans-serif;
+  font-size: 48px;
+  line-height: 58px;
+}
+
+a header {
+  text-decoration: underline;
+  color: rgba(28, 190, 131, 1);
+}
+
+article {
+  margin: auto;
+  font-family: 'Playfair Display', Georgia, Serif;
+  font-size: 300%;
+  letter-spacing: 0.1px;
+  text-align: left;
+  margin-top: -50px;
+  line-height: 60px;
+  color: #838b91;
+}
+
+article .giflink {
+  color: #333333;
+}
+
+article .no-link {
+  cursor: default;
+}
+
+article a {
+  text-decoration: none;
+}
+
+
+@media only screen and (max-width: 1100px) {
+  article {
+    font-size: 2em;
+    line-height: 45px;
+    padding: 20px;
+  }
+  h3 {
+    margin-left: 20px;
+  }
+  h2 {
+    margin-left: 20px;
+  }
+}
+
+@media only screen and (max-width: 400px) {
+  article {
+    font-size: 1.3em;
+    line-height: 30px;
+    margin-right: 10px;
+  }
+    h3 {
+    margin-left: 20px;
+}
+    h2 {
+    margin-left: 20px;
+  }
+}
