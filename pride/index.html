@@ -1,0 +1,153 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+
+<!-- 
+
+      _
+     /(|
+    (  :
+   __\  \  _____
+ (____)  `|      Welcome!
+(____)|   |      My name is Corey Kozarski and I made this project
+ (____).__|      Happy Pride
+  (___)__.|_____ Thanks for checking out my site
+
+ -->
+
+<html lang="en">
+
+<head>
+
+<link rel="stylesheet" href="../css/style.css">
+<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
+<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+
+
+<meta charset="utf-8">
+
+	<title>8-Bit Pride</title>
+
+		<style type="text/css">
+		
+body { 
+       margin: 0; 
+       padding: 0
+     }
+#c { 
+     position: absolute; 
+     width: 100%; 
+     height: 100%; 
+     overflow: hidden
+   }
+
+div.center p {
+    margin: 0;
+    position: absolute;
+    padding: 1.5%;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none; 
+    -moz-user-select: none; 
+    -ms-user-select: none; 
+   	 user-select: none; 
+
+     }         
+		
+		</style>
+
+
+</head>
+
+
+<canvas id="c"></canvas>
+
+  <script>
+    (function() {
+        var
+ 
+        htmlCanvas = document.getElementById('c'),
+		context = htmlCanvas.getContext('2d');
+
+       initialize();
+
+       function initialize() {
+ 
+           window.addEventListener('resize', resizeCanvas, false);
+				resizeCanvas();
+        }
+
+        function redraw() {
+           context.strokeRect(0, 0, window.innerWidth, window.innerHeight);
+        }
+
+
+        function resizeCanvas() {
+            htmlCanvas.width = window.innerWidth;
+            htmlCanvas.height = window.innerHeight;
+            redraw();
+        }
+    })();
+
+
+</script>
+
+<script>
+
+function drawPixels(x, y) {
+  for (var i = -20; i < 20; i+= 1) {
+    for (var j = -20; j < 20; j+= 1) {
+      if (Math.random() > 0.5) {
+        ctx.fillStyle = ['red', 'orange', 'yellow', 'green', 
+                         'cyan', 'blue', 'purple'][getRandomInt(0,40)];
+        ctx.fillRect(x+i, y+j, 4, 4);
+      }
+    }
+  }
+}
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 20)) + min;
+}
+
+var el = document.getElementById('c');
+var ctx = el.getContext('2d');
+
+ctx.lineJoin = ctx.lineCap = 'round';
+var isDrawing, lastPoint;
+
+el.onmousedown = function(e) {
+  isDrawing = true;
+  lastPoint = { x: e.clientX, y: e.clientY };
+};
+el.onmousemove = function(e) {
+  if (!isDrawing) return;
+  
+  drawPixels(e.clientX, e.clientY);
+  
+  lastPoint = { x: e.clientX, y: e.clientY };
+};
+el.onmouseup = function() {
+  isDrawing = false;
+};
+
+</script>
+
+
+
+
+<div class="content" id="article">
+	<div class="center">
+
+<article>
+	<p>built with pride
+</article>
+			</div>
+				</div>
+
+
+	</body>
+		</html>
