@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawplets</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <canvas id="rainCanvas"></canvas>
+    <canvas id="drawingCanvas"></canvas>
+    
+    <div id="resetBtn" class="reset-btn">
+        <span class="tab-icon">🧽</span>
+    </div>
+    
+    <div id="rainControlBtn" class="rain-control-btn">
+        <span class="tab-icon">🌦️</span>
+    </div>
+    
+    <div id="videoTab" class="video-tab">
+        <span class="tab-icon">🔊</span>
+    </div>
+    <div id="videoContainer" class="video-container hidden">
+        <iframe id="youtubeVideo" width="560" height="315" 
+                src="https://www.youtube-nocookie.com/embed/P6Segk8cr-c?si=QvMO795qwr6C5r8C&enablejsapi=1" 
+                title="YouTube video player" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                referrerpolicy="strict-origin-when-cross-origin" 
+                allowfullscreen>
+        </iframe>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>

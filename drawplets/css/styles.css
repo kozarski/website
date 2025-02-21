@@ -1,0 +1,110 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    background-color: #f8f8f8;
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#drawingCanvas {
+    z-index: 3;
+    cursor: auto; /* Reset to default cursor */
+}
+
+#rainCanvas {
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Remove unused animation */
+/* @keyframes fall {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(100vh); }
+} */
+
+.video-tab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #333;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+}
+
+.video-tab:hover {
+    transform: scale(1.1);
+}
+
+.video-container {
+    position: fixed;
+    right: -570px;
+    bottom: 80px;
+    transition: right 0.3s ease;
+    z-index: 999;
+}
+
+.video-container.visible {
+    right: 10px;
+}
+
+.video-container.hidden {
+    right: -570px;
+}
+
+.tab-icon {
+    font-size: 20px;
+}
+
+.reset-btn {
+    position: fixed;
+    bottom: 70px;  /* Position above the speaker button */
+    right: 20px;
+    background: #333;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+}
+
+.reset-btn:hover {
+    transform: scale(1.1);
+}
+
+.rain-control-btn {
+    position: fixed;
+    bottom: 120px;  /* Position above the reset button */
+    right: 20px;
+    background: #333;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+}
+
+.rain-control-btn:hover {
+    transform: scale(1.1);
+}
