@@ -1,0 +1,1066 @@
+/*
+ * Bent Pixel Lab - Style Definitions
+ * Version: 1.0.0
+ * Author: Corey
+ * 
+ * This stylesheet defines the visual appearance of the application,
+ * including themes, animations, and component-specific styles.
+ * The design follows a pixel-art inspired aesthetic with modern
+ * interactive elements.
+ *
+ * Table of Contents:
+ * 1. Theme Variables
+ * 2. Base Styles
+ * 3. Layout & Container
+ * 4. Header
+ * 5. Upload Section
+ * 6. Editor Interface
+ * 7. Controls & Sliders
+ * 8. Grid Effects
+ * 9. Presets
+ * 10. Audio Player
+ * 11. Animations
+ * 12. Utilities
+ * 13. Media Queries
+ */
+
+/* ==========================================================================
+   1. Theme Variables
+   ========================================================================== */
+:root {
+    /* Light theme variables */
+    --bg-color-light: #f2f2f2;
+    --text-color-light: #1a1a1a;
+    --surface-color-light: #ffffff;
+    --border-color-light: rgba(0, 0, 0, 0.15);
+    --primary-color-light: #2d2d2d;
+    --accent-color-light: #ff3864;
+    --tool-color-light: #261447;
+    --header-bg-light: #ffffff;
+    --pixel-border-light: #2d2d2d;
+
+    /* Dark theme variables */
+    --bg-color-dark: #1a1814;
+    --text-color-dark: #e6d5c4;
+    --surface-color-dark: #2a251f;
+    --border-color-dark: rgba(230, 213, 196, 0.1);
+    --primary-color-dark: #c4b5a2;
+    --accent-color-dark: #8c7b6b;
+    --tool-color-dark: #c4b5a2;
+    --header-bg-dark: #2a251f;
+    --pixel-border-dark: #c4b5a2;
+
+    /* Default to light theme */
+    --bg-color: var(--bg-color-light);
+    --text-color: var(--text-color-light);
+    --surface-color: var(--surface-color-light);
+    --border-color: var(--border-color-light);
+    --primary-color: var(--primary-color-light);
+    --accent-color: var(--accent-color-light);
+    --tool-color: var(--tool-color-light);
+    --header-bg: var(--header-bg-light);
+    --pixel-border: var(--pixel-border-light);
+}
+
+/* Dark theme class */
+.dark-theme {
+    --bg-color: var(--bg-color-dark);
+    --text-color: var(--text-color-dark);
+    --surface-color: var(--surface-color-dark);
+    --border-color: var(--border-color-dark);
+    --primary-color: var(--primary-color-dark);
+    --accent-color: var(--accent-color-dark);
+    --tool-color: var(--tool-color-dark);
+    --header-bg: var(--header-bg-dark);
+    --pixel-border: var(--pixel-border-dark);
+}
+
+/* Theme toggle button */
+button#themeToggle.theme-toggle {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    left: auto !important;
+    width: 60px;
+    height: 32px;
+    background: var(--surface-color);
+    border: 2px solid var(--pixel-border);
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 16px;
+    font-family: monospace;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle .icon {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    transition: transform 0.3s ease;
+    color: var(--text-color);
+}
+
+.theme-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0 var(--pixel-border);
+}
+
+.dark-theme .theme-toggle {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .theme-toggle .sun {
+    transform: translateX(60px);
+}
+
+.dark-theme .theme-toggle .moon {
+    transform: translateX(0);
+}
+
+.theme-toggle .sun {
+    transform: translateX(0);
+}
+
+.theme-toggle .moon {
+    transform: translateX(-60px);
+}
+
+/* ==========================================================================
+   2. Base Styles
+   ========================================================================== */
+
+body {
+    margin: 0;
+    font-family: "Space Mono", "SF Mono", monospace;
+    background: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    transition: all 0.3s ease;
+}
+
+/* ==========================================================================
+   3. Layout & Container
+   ========================================================================== */
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==========================================================================
+   4. Header
+   ========================================================================== */
+
+header {
+    background: var(--header-bg);
+    padding: 2rem 0;
+    margin: -20px -20px 40px -20px;
+    border-bottom: 2px solid var(--pixel-border);
+    position: relative;
+}
+
+header::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--pixel-border);
+    opacity: 0.5;
+}
+
+h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    padding: 0 20px;
+    font-family: "Press Start 2P", monospace;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+/* ==========================================================================
+   5. Upload Section
+   ========================================================================== */
+
+#uploadSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+    background: var(--surface-color);
+    border: 2px solid var(--pixel-border);
+    position: relative;
+    margin: auto;
+    min-width: 300px;
+    max-width: 600px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+#uploadSection.drag-over {
+    background: var(--surface-color);
+    border-color: var(--primary-color);
+    transform: scale(1.02);
+}
+
+#uploadSection.hidden {
+    display: none;
+}
+
+#uploadSection::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 2px solid var(--pixel-border);
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.upload-button {
+    display: inline-block;
+    padding: 12px 24px;
+    background: var(--primary-color);
+    color: var(--bg-color);
+    font-family: "Space Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 0 auto;
+    font-weight: 700;
+    border: 2px solid var(--pixel-border);
+    position: relative;
+}
+
+.upload-button::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border: 1px solid var(--pixel-border);
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.upload-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0 var(--pixel-border);
+}
+
+.upload-button:hover::after {
+    opacity: 1;
+}
+
+.upload-text {
+    color: var(--text-color);
+    opacity: 0.7;
+    margin-top: 16px;
+    font-size: 0.9rem;
+}
+
+#editor {
+    display: none;
+    width: 100%;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+#editor.visible {
+    display: block;
+    opacity: 1;
+}
+
+#photoInput {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+#previewArea {
+    width: 100%;
+    background: var(--surface-color);
+    border: 2px solid var(--pixel-border);
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+#previewArea::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 2px solid var(--pixel-border);
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.preview-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+#photoCanvas {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+#drawingOverlay {
+    position: absolute;
+    top: 20px; /* Match the padding of previewArea */
+    left: 20px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.controls-container {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.classic-effects-container, .grid-container {
+    background: var(--surface-color);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.effects-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.effects-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.effects-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.effects-actions .action-btn {
+    font-size: 0.9rem;
+    padding: 6px 12px;
+    white-space: nowrap;
+}
+
+.slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-family: "Space Mono", monospace;
+}
+
+.slider-group label {
+    display: grid;
+    grid-template-columns: 120px minmax(100px, 1fr) 32px 32px;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Container for effect name and tooltip */
+.slider-group label span {
+    position: relative;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.slider-group label span .tooltip-text {
+    position: absolute;
+    display: block;
+    white-space: normal;
+}
+
+.slider-group input[type="range"] {
+    height: 2px;
+    background: var(--accent-color);
+    border-radius: 0;
+    -webkit-appearance: none;
+    cursor: pointer;
+    width: 100%;
+    min-width: 100px;
+}
+
+.slider-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background: var(--accent-color);
+    border: 2px solid var(--pixel-border);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.slider-group input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.value-input {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 2px solid var(--pixel-border);
+    font-size: 0.9rem;
+    background: var(--surface-color);
+    color: var(--text-color);
+    -moz-appearance: textfield; /* Firefox */
+    text-align: center;
+    font-family: "Space Mono", monospace;
+}
+
+/* Remove spinner buttons for Chrome, Safari, Edge....and...Opera */
+.value-input::-webkit-outer-spin-button,
+.value-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--pixel-border);
+    background: var(--primary-color);
+    color: var(--bg-color);
+    font-family: "Space Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.action-btn::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border: 1px solid var(--pixel-border);
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0 var(--pixel-border);
+}
+
+.action-btn:hover::after {
+    opacity: 1;
+}
+
+.preset-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.preset-btn {
+    padding: 8px 16px;
+    background: var(--surface-color);
+    color: var(--text-color);
+    border: 2px solid var(--pixel-border);
+    font-family: "Space Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.preset-btn::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border: 1px solid var(--pixel-border);
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.preset-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0 var(--pixel-border);
+    background: var(--accent-color);
+    color: var(--bg-color);
+}
+
+.preset-btn:hover::after {
+    opacity: 1;
+}
+
+/* Custom preset styles */
+.custom-preset {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-right: 8px;
+}
+
+.custom-preset span {
+    flex: 1;
+}
+
+.delete-preset {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 2px solid var(--pixel-border);
+    background: var(--accent-color);
+    color: var(--bg-color);
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 2;
+    font-family: "Space Mono", monospace;
+}
+
+.delete-preset::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border: 1px solid var(--pixel-border);
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.delete-preset:hover {
+    transform: translateY(-2px);
+    box-shadow: 2px 2px 0 var(--pixel-border);
+    background: var(--primary-color);
+}
+
+.delete-preset:hover::after {
+    opacity: 1;
+}
+
+.tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    background: var(--surface-color);
+    color: var(--text-color);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    width: 250px;
+    z-index: 100;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 8px;
+    text-transform: none;
+    letter-spacing: normal;
+    white-space: normal;
+    line-height: 1.4;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: normal;
+    display: block;
+}
+
+/* Position tooltip to the left if it would overflow viewport */
+@media (min-width: 1200px) {
+    .tooltip-text {
+        left: 100%;
+        right: auto;
+    }
+}
+
+@media (max-width: 1199px) {
+    .tooltip-text {
+        left: auto;
+        right: 100%;
+        margin-left: 0;
+        margin-right: 10px;
+    }
+}
+
+.slider-group label span:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Grid styles */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    background: var(--surface-color);
+    padding: 4px;
+    border: 2px solid var(--pixel-border);
+    position: relative;
+}
+
+.grid::after {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 2px solid var(--pixel-border);
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.grid-cell {
+    aspect-ratio: 1;
+    background: var(--surface-color);
+    border: 2px solid var(--pixel-border);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.grid-cell::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border: 1px solid var(--pixel-border);
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.grid-cell:hover {
+    background: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 2px 2px 0 var(--pixel-border);
+}
+
+.grid-cell.active {
+    background: var(--accent-color);
+    box-shadow: 2px 2px 0 var(--pixel-border);
+}
+
+.grid-cell.active::after {
+    opacity: 1;
+}
+
+.grid-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.grid-container h3 {
+    margin: 0;
+}
+
+/* Prevent text selection on dropdown */
+#gridEffectType {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Reorder grid elements */
+.grid-controls {
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+#glitchGrid {
+    order: 1;
+}
+
+/* Dropdown container */
+.grid-effect-select {
+    width: 100%;
+}
+
+#gridEffectType {
+    width: 100%;
+    padding: 8px 16px;
+    background: var(--surface-color);
+    color: var(--text-color);
+    border: 2px solid var(--pixel-border);
+    font-family: "Space Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+}
+
+/* Button container */
+.grid-buttons {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+}
+
+#clearGrid, #randomGrid {
+    flex: 1;
+    padding: 8px 16px;
+    background: var(--surface-color);
+    color: var(--text-color);
+    border: 2px solid var(--pixel-border);
+    font-family: "Space Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    white-space: nowrap;
+}
+
+/* Custom dropdown arrow */
+#gridEffectType {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    padding-right: 32px;
+}
+
+#gridEffectType::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border: 1px solid var(--pixel-border);
+    opacity: 0.5;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+#gridEffectType:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0 var(--pixel-border);
+}
+
+#gridEffectType:hover::after {
+    opacity: 1;
+}
+
+#clearGrid::after, #randomGrid::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border: 1px solid var(--pixel-border);
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+#clearGrid:hover, #randomGrid:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0 var(--pixel-border);
+    background: var(--accent-color);
+    color: var(--bg-color);
+}
+
+#clearGrid:hover::after, #randomGrid:hover::after {
+    opacity: 1;
+}
+
+/* Adjust grid container spacing */
+.glitch-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Audio Player Styles */
+.audio-player {
+    width: 100%;
+    margin: 20px 0 0 0;
+    padding: 30px;
+    background: var(--surface-color);
+    border: 2px solid var(--pixel-border);
+    position: relative;
+    box-sizing: border-box;
+}
+
+.audio-player::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 2px solid var(--pixel-border);
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.audio-player .effects-header {
+    margin-bottom: 20px;
+}
+
+.audio-player .effects-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.audio-controls {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0;
+}
+
+.audio-controls .action-btn {
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.progress-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 200px;
+}
+
+#audioProgress {
+    width: 100%;
+    height: 12px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--border-color);
+    border: 2px solid var(--pixel-border);
+    cursor: pointer;
+}
+
+#audioProgress::-webkit-progress-bar {
+    background: var(--border-color);
+}
+
+#audioProgress::-webkit-progress-value {
+    background: var(--primary-color);
+    transition: width 0.1s linear;
+}
+
+#audioProgress::-moz-progress-bar {
+    background: var(--primary-color);
+}
+
+#timeDisplay {
+    font-size: 1rem;
+    font-family: "Space Mono", monospace;
+    color: var(--text-color);
+    opacity: 0.8;
+}
+
+.volume-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 150px;
+}
+
+#volumeControl {
+    width: 100px;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--border-color);
+    border: 2px solid var(--pixel-border);
+    cursor: pointer;
+}
+
+#volumeControl::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--primary-color);
+    border: 2px solid var(--pixel-border);
+    border-radius: 0;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+#volumeControl::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--primary-color);
+    border: 2px solid var(--pixel-border);
+    border-radius: 0;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+#volumeControl::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+#volumeControl::-moz-range-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Dark theme adjustments */
+.dark-theme .audio-player {
+    box-shadow: 0 0 10px rgba(var(--accent-color), 0.2);
+}
+
+.dark-theme #audioProgress::-webkit-progress-value,
+.dark-theme #volumeControl::-webkit-slider-thumb {
+    background: var(--accent-color);
+}
+
+.dark-theme #audioProgress::-moz-progress-bar,
+.dark-theme #volumeControl::-moz-range-thumb {
+    background: var(--accent-color);
+}
+
+/* User Presets Section */
+.user-presets {
+    display: none;
+}
+
+.user-presets.visible {
+    display: block;
+    margin-top: 30px;
+}
+
+.user-preset-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* Listen title spacing */
+#editor > .effects-header {
+    margin: 40px 0 15px 0;
+}
+
+/* Reset button styles */
+.slider-reset {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: var(--surface-color);
+    color: var(--text-color);
+    border: 2px solid var(--pixel-border);
+    font-family: "Space Mono", monospace;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.slider-reset::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border: 1px solid var(--pixel-border);
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.slider-reset:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 4px 0 var(--pixel-border);
+    background: var(--accent-color);
+    color: var(--bg-color);
+}
+
+.slider-reset:hover::after {
+    opacity: 1;
+}
+
+/* ==========================================================================
+   11. Animations
+   ========================================================================== */
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ==========================================================================
+   12. Utilities
+   ========================================================================== */
+
+.hidden {
+    display: none !important;
+}
+
+.visible {
+    display: block !important;
+}
+
+/* ==========================================================================
+   13. Media Queries
+   ========================================================================== */
+
+/* Tablet and smaller screens */
+@media (max-width: 1199px) {
+    .tooltip-text {
+        left: auto;
+        right: 100%;
+        margin-left: 0;
+        margin-right: 10px;
+    }
+}
+
+/* Large desktop screens */
+@media (min-width: 1200px) {
+    .tooltip-text {
+        left: 100%;
+        right: auto;
+    }
+}

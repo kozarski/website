@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 
+    ⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+    ⠇⡅⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+    ⠧⡇⠀⠀⠒⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⡤⡆⠦⠆⢀⠠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+    ⠧⣷⣆⠅⢦⠀⠀⠀⠀⠀⠀⠀⠀⠠⠀⠈⠀⠀⠀⠀⠀⢤⣤⣆⢇⣶⣤⡤⡯⣦⣌⡡⠄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+    ⠷⣿⣷⣆⣐⡆⠀⠀⠀⠀⢀⠤⠊⠀⠀⢀⣠⣾⢯⣦⣴⣜⣺⣾⣿⣤⠟⠋⣷⢛⡣⠭⠢⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+    ⠯⣿⣷⢫⡯⠄⠀⠀⢀⠐⠁⠀⠀⠀⠠⣤⣿⣿⣾⣿⣿⣿⣿⣿⣿⣿⣿⣙⣷⡗⢤⡤⠀⠈⣰⠶⡤⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+    ⣩⣿⡏⠉⠉⠀⢠⡔⠁⠀⠀⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⠑⣏⠶⡉⠖⣡⠂⣈⣤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+    ⣮⣿⣧⣤⣤⠖⠁⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⢉⡻⣿⣿⣿⣿⣿⣿⣿⣿⠟⠓⠈⠅⠈⠀⠀⠘⢒⣽⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+    ⣿⡿⠛⠉⠀⠀⠀⣀⠔⢀⡴⣃⠀⠀⢀⠷⠲⡄⠸⠟⢋⣿⣿⣿⣿⣿⡇⠀⠀⠀⠐⠁⠀⠀⠂⠀⠀⠰⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+    ⡆⣷⣆⡐⠶⠤⢤⣷⣀⣀⣩⢐⣟⣥⠜⣤⣀⣠⣤⠀⠈⠉⢀⣹⣿⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+    ⢃⣿⣞⣫⡔⢆⡸⡿⣿⣿⣄⣰⣿⠁⢀⣛⠿⣻⣿⣿⣧⣬⣿⣿⣿⣿⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⢀
+    ⢼⣿⣟⢿⣧⣾⣵⣷⣿⣿⣟⡿⢿⣶⣞⣍⡴⢿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⣠⠈⠀⢀⣀⣼
+    ⠋⣿⣟⡛⢿⣿⣿⣿⣿⣿⣭⣿⣿⣿⣿⣯⣽⣿⣿⣿⣿⠟⠛⠿⢽⣿⣿⣆⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⣀⢀⡠⣤⣤⣰⣿⠟⠁⠀⠀⡼⢾⣿       
+    ⣻⣿⣟⣇⠈⣉⣯⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠃⠀⠀⠀⠀⠀⠻⣿⣿⣿⣿⣴⣶⣤⣤⣤⣤⣴⣴⣴⣶⣦⣦⣤⣦⣀⣦⣤⣶⣿⣿⣿⣿⣿⣿⣿⠿⠁⠀⠀⡀⣤⣬⣾⣿
+    ⡝⣿⣿⣇⣤⣶⣿⣷⣾⣭⡿⠻⢿⣿⣿⣿⣿⠿⠃⠀⠀⠀⠀⡄⠀⠀⠀⢊⡻⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⠋⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣟⢿⠟⢉⠀⡀⢤⣴⣿⣿⣿⠿⠻
+    ⡁⣻⣿⣿⣿⣿⣷⣿⣿⣿⣿⠾⣿⡿⠞⠁⠀⠀⠀⠀⠀⠔⠫⡅⠀⠀⠀⠀⠁⣀⠀⠈⠻⣿⣿⣿⣿⣻⢟⣁⣄⡄⣀⠙⠻⣿⣿⡿⠿⠛⡋⠕⠂⢀⣀⣄⣓⣳⢿⠟⢛⣩⠴⠈⠀
+    ⠂⡁⠈⠛⠛⠛⠛⠋⠁⠀⠈⠈⡀⠀⠀⠀⠀⢀⠘⠀⠀⠀⠆⠀⡀⡢⣀⣆⠄⠈⠨⢦⡀⣈⠙⠛⠿⢿⣿⣿⣿⣿⣿⡿⡿⠿⠟⠆⠒⠁⠀⢶⣾⠿⠟⠛⢉⣀⣠⡶⠚⠁⠀⠀⣠
+    ⠀⡇⡄⣀⡀⠀⠀⠀⠀⠀⠀⠀⢬⠠⠀⡀⠀⠋⠁⠀⡀⠀⠀⡀⠆⢱⣿⣿⣧⣧⣄⠛⣿⣞⣵⣤⣷⣄⠀⠀⠀⠐⠀⠀⠀⠀⠀⠈⠉⠁⠁⠀⠠⢤⣶⣾⣿⡿⠋⢀⣀⣰⣶⣾⣿
+    ⡀⡆⠀⡉⡁⢿⣉⢀⠀⣰⣷⣿⣟⠠⡽⢂⡀⡄⠀⠰⣖⢱⢖⢂⡆⠈⣿⣿⣿⣿⣿⣶⣄⡙⠻⢿⣿⣿⣷⣦⣀⠀⠠⣤⣀⡀⢈⣓⣶⣶⣿⣿⣿⣿⣿⠟⠉⠀⠀⠀⣉⣭⣽⣿⣿
+    ⡇⣯⣿⣿⣿⣾⣿⣿⣿⠿⠟⡡⢞⣹⠾⢻⣚⣛⢺⠞⢋⣭⣾⣧⡃⢄⡈⢿⣿⣿⣿⣿⣿⣿⣯⣿⣮⣽⣿⣿⣿⣿⣷⣬⣽⣿⣿⣿⣽⡿⣿⡿⠟⠋⢀⣀⣐⣺⣿⣿⣟⣫⣭⣿⣿
+    ⢳⣿⣿⣿⣿⣿⣿⣿⣿⣤⣿⣿⣿⣿⣿⣦⠒⠉⢁⡀⠀⣙⣛⢿⣷⣶⣅⠀⠙⠻⣿⣿⣿⣿⣟⡚⠛⠻⠞⠿⠿⡿⡿⠯⠁⠟⣊⠾⠝⢋⣁⣀⣤⣤⣿⣿⣿⡿⠿⠿⠻⠛⠻⠻⠿
+    ⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣟⣐⣾⡿⡟⢶⠾⢋⢹⠿⢿⣿⣿⣷⣦⡈⠙⠛⠿⠿⢿⣶⣶⣶⣶⣶⢶⠟⠚⠀⠁⠀⠀⠙⠛⠛⠛⠛⠛⠋⠉⠁⠀⠀⠀⠀⠀⢀⠀⠀
+    
+    Bent Pixel Lab
+        My attempt at taking the often difficult task of creating custom glitch art by making it easy, fun, and interactive.
+        "Databending" is the process of manipulating the binary data of an image to create a new image.
+        Controls featured on this site are roughly based on the databending techniques that have been popularized by editing and/or manipulating image binary data.
+        
+        Features:
+         
+        - Classic effects with adjustable parameters
+        - Grid-based effect application
+        - Audio visualization of image data
+        - Preset management system
+        - Dark/Light theme support
+    -->
+    <title>Bent Pixel Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
+        <span class="icon sun">*</span>
+        <span class="icon moon">○</span>
+    </button>
+    <div class="container">
+        <header>
+            <h1>Bent Pixel Lab</h1>
+        </header>
+        
+        <main>
+            <!-- Upload Section -->
+            <div id="uploadSection">
+                <input type="file" id="photoInput" accept="image/*">
+                <label for="photoInput" class="upload-button">Choose Photo</label>
+                <p class="upload-text">or drag and drop your photo here</p>
+            </div>
+
+            <!-- Editor Section -->
+            <div id="editor">
+                <!-- Preview Area with Canvas -->
+                <div id="previewArea">
+                    <canvas id="photoCanvas"></canvas>
+                    <canvas id="drawingOverlay" class="overlay"></canvas>
+                    <div class="preview-actions">
+                        <button id="new" class="action-btn">New</button>
+                        <button id="reset" class="action-btn">Reset</button>
+                        <button id="save" class="action-btn">Save</button>
+                    </div>
+                </div>
+
+                <!-- Tools Section -->
+                <div class="toolbox">
+                    <!-- Controls Container -->
+                    <div class="controls-container">
+                        <!-- Classic Effects -->
+                        <div class="classic-effects-container">
+                            <div class="effects-header">
+                                <h3>Classic Effects</h3>
+                                <div class="effects-actions">
+                                    <button id="randomize" class="action-btn">Randomize</button>
+                                    <button id="savePreset" class="action-btn">Save</button>
+                                </div>
+                            </div>
+                            <div class="slider-group">
+                                <label>
+                                    <span>Bit Shift
+                                        <span class="tooltip-text">Shifts the bits of each color channel, creating digital corruption artifacts. This effect simulates data corruption by manipulating the binary data of the image, resulting in glitch-like color shifts and patterns.</span>
+                                    </span>
+                                    <input type="range" id="bitShift" min="0" max="100" value="0">
+                                    <input type="number" class="value-input" value="0" min="0" max="100">
+                                    <button class="slider-reset" data-target="bitShift">↺</button>
+                                </label>
+                                <label>
+                                    <span>Data Offset
+                                        <span class="tooltip-text">Displaces chunks of image data, creating a "broken" look. This effect simulates file corruption by moving blocks of pixel data, resulting in displaced sections and scan-line like artifacts.</span>
+                                    </span>
+                                    <input type="range" id="dataOffset" min="0" max="100" value="0">
+                                    <input type="number" class="value-input" value="0" min="0" max="100">
+                                    <button class="slider-reset" data-target="dataOffset">↺</button>
+                                </label>
+                                <label>
+                                    <span>RGB Split
+                                        <span class="tooltip-text">Separates the red, green, and blue color channels vertically. This effect creates a chromatic aberration look similar to old CRT displays or 3D anaglyph images, with subtle color channel misalignment.</span>
+                                    </span>
+                                    <input type="range" id="rgbSplit" min="0" max="50" value="0">
+                                    <input type="number" class="value-input" value="0" min="0" max="50">
+                                    <button class="slider-reset" data-target="rgbSplit">↺</button>
+                                </label>
+                                <label>
+                                    <span>Scanlines
+                                        <span class="tooltip-text">Adds horizontal scan lines and subtle distortion. This effect mimics the look of old CRT displays and VHS tapes, creating alternating dark lines and slight vertical displacement.</span>
+                                    </span>
+                                    <input type="range" id="scanlines" min="0" max="100" value="0">
+                                    <input type="number" class="value-input" value="0" min="0" max="100">
+                                    <button class="slider-reset" data-target="scanlines">↺</button>
+                                </label>
+                                <label>
+                                    <span>Path Sort
+                                        <span class="tooltip-text">Sorts pixels along paths of least resistance in the image. This effect creates organic-looking distortions that follow the natural contours and edges, resulting in flowing, liquid-like patterns.</span>
+                                    </span>
+                                    <input type="range" id="pathSort" min="0" max="100" value="0">
+                                    <input type="number" class="value-input" value="0" min="0" max="100">
+                                    <button class="slider-reset" data-target="pathSort">↺</button>
+                                </label>
+                                <label>
+                                    <span>Seed Growth
+                                        <span class="tooltip-text">Creates organic distortions that grow from bright points in the image. This effect identifies bright areas as "seeds" and grows distortion patterns outward, creating a blooming or spreading effect.</span>
+                                    </span>
+                                    <input type="range" id="seedGrowth" min="0" max="100" value="0">
+                                    <input type="number" class="value-input" value="0" min="0" max="100">
+                                    <button class="slider-reset" data-target="seedGrowth">↺</button>
+                                </label>
+                                <label>
+                                    <span>Pixel Sort
+                                        <span class="tooltip-text">Sorts pixels based on brightness within segments. This effect creates long streaks by organizing pixels in vertical bands, with the threshold determining where sorting begins and ends.</span>
+                                    </span>
+                                    <input type="range" id="pixelSort" min="0" max="255" value="0">
+                                    <input type="number" class="value-input" value="0" min="0" max="255">
+                                    <button class="slider-reset" data-target="pixelSort">↺</button>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Grid Controls -->
+                        <div class="grid-container">
+                            <h3>Grid Effects</h3>
+                            <div class="glitch-grid">
+                                <div class="grid-controls">
+                                    <select id="gridEffectType">
+                                        <option value="pixelflow">Pixel Flow</option>
+                                        <option value="vortex">Vortex Warp</option>
+                                        <option value="shatter">Crystal Shatter</option>
+                                        <option value="ripple">Ripple Wave</option>
+                                        <option value="neon">Neon Pulse</option>
+                                        <option value="prism">Prism Split</option>
+                                    </select>
+                                    <button id="clearGrid">Clear Grid</button>
+                                    <button id="randomGrid">Random Grid</button>
+                                </div>
+                                <div id="glitchGrid" class="grid"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Presets -->
+                    <div class="presets-section">
+                        <h3>Presets</h3>
+                        <div class="default-presets">
+                            <div class="preset-buttons">
+                                <button class="preset-btn" data-preset="glitch">Glitch</button>
+                                <button class="preset-btn" data-preset="wave">Wave</button>
+                                <button class="preset-btn" data-preset="dissolve">Dissolve</button>
+                                <button class="preset-btn" data-preset="chaos">Chaos</button>
+                                <button class="preset-btn" data-preset="analog_corrupt">Analog Corrupt</button>
+                                <button class="preset-btn" data-preset="organic">Organic</button>
+                                <button class="preset-btn" data-preset="audacity_pitch">Audacity Pitch</button>
+                                <button class="preset-btn" data-preset="bass_boost">Bass Boost</button>
+                                <button class="preset-btn" data-preset="echo_bend">Echo Bend</button>
+                                <button class="preset-btn" data-preset="equalizer">Equalizer</button>
+                                <button class="preset-btn" data-preset="phaser_corrupt">Phaser Corrupt</button>
+                                <button class="preset-btn" data-preset="hex_edit">Hex Edit</button>
+                            </div>
+                        </div>
+                        <div class="user-presets">
+                            <h4>User Saved Presets</h4>
+                            <div class="preset-buttons user-preset-buttons">
+                                <!-- User presets will be dynamically added here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="debug" style="position: fixed; bottom: 10px; left: 10px; color: white; background: rgba(0,0,0,0.7); padding: 10px; display: none;"></div>
+        </main>
+    </div>
+    <script src="js/app.js"></script>
+</body>
+</html>
