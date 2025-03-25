@@ -416,6 +416,7 @@ main {
     height: 2px;
     background: var(--accent-color);
     border-radius: 0;
+    appearance: none;
     -webkit-appearance: none;
     cursor: pointer;
     width: 100%;
@@ -444,6 +445,7 @@ main {
     font-size: 0.9rem;
     background: var(--surface-color);
     color: var(--text-color);
+    appearance: textfield;
     -moz-appearance: textfield; /* Firefox */
     text-align: center;
     font-family: "Space Mono", monospace;
