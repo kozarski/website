@@ -1,1 +1,16 @@
+# General ignores
 .DS_Store
+*.log
+*.env
+
+# Node dependencies for the blog project
+blog/node_modules/
+
+# DO NOT ignore the root /blog directory (built site)
+
+# Editor/IDE specific files
+.vscode/
+.idea/
+
+# Temporary files
+tmp/

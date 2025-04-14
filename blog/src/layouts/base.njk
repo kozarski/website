@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="canonical" href={{ page.url | url | absoluteUrl(site.url) }}>
+    <link rel="alternate" type="application/rss+xml" href="{{ '/feed.xml' | url }}" title="RSS Feed for {{ site.name }}">
+
+    {# Revert to linking a single main CSS file #}
+    <link rel="stylesheet" href="{{ '/assets/main.css' | url }}">
+
+    {# Removed Google Font link #}
+
+    <title>
+      {% if title %}
+        {{ title | escape }} | {{ site.name }}
+      {% else %}
+        {{ site.name }}
+      {% endif %}
+    </title>
+
+    <link rel="icon" type="image/png" href="{{ '/images/copyleft.png' | url }}">
+
+    {# Minimal Meta Tags #}
+    <meta name="description" content="{{ description or site.description | escape  }}">
+
+    {# Removed OG/Twitter meta tags #}
+    {# Removed Mermaid script #}
+
+    <link rel="stylesheet" href="{{ '/css/header.css' | url }}">
+    <link rel="stylesheet" href="{{ '/css/footer.css' | url }}">
+    {# Add cache-busting query string to post-list.css #}
+    <link rel="stylesheet" href="{{ '/css/post-list.css' | url }}?v={{ build.timestamp }}">
+    <link rel="stylesheet" href="{{ '/css/post.css' | url }}">
+    <link rel="stylesheet" href="{{ '/css/prism-theme.css' | url }}">
+    {# Add links to other CSS like about.css, hero.css, not-found.css if specific styles are missing #}
+
+  </head>
+  <body>
+    <div class="container"> {# Relies on styles in main.css #}
+
+      <header class="header"> {# Use theme classes #}
+        <div class="header__content">
+          <h1 class="site-title">
+            <a href={{ "/" | url }}>{{site.name}}</a>
+          </h1>
+          {% if site.headerLinks %}
+            <nav class="nav">
+              <ul class="nav__list">
+                {% for item in site.headerLinks %}
+                  {% set currentAttribute = '' %}
+                  {% if page.url == item.url %}
+                    {% set currentAttribute = 'aria-current="page"' %}
+                  {% endif %}
+                  <li class="nav-item">
+                    <a href="{{ item.url | url }}" {{ currentAttribute | safe }}>{{ item.text }}</a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </nav>
+          {% endif %}
+        </div>
+      </header>
+
+      <main class="main"> {# Use theme classes #}
+        {{ content | safe }}
+      </main>
+
+      <footer class="footer"> {# Use theme classes #}
+        <div class="footer__content">
+          {# Target site footer structure #}
+          <p class="footer-quote shimmer">"{{ site.quote }}"</p>
+          <p class="meta">built with <a href="https://www.11ty.dev" target="_blank">11ty</a>. on a modified <a href="https://github.com/yinkakun/eleventy-duo/tree/master" target="_blank">Duo</a>. last build - {{ build.timestamp | readableDate('yyyy') }}.</p> {# Use readableDate filter #}
+          <p class="separator">◦◦◦</p>
+        </div>
+      </footer>
+
+    </div> {# Close container #}
+    {# Removed bundledjs #}
+  </body>
+</html>

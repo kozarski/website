@@ -1,0 +1,18 @@
+---
+layout: base.njk
+permalink: /posts/ # Correct permalink
+---
+
+<h2>Posts in: #all ({{ collections.posts | length }})</h2> {# Added heading #}
+
+{# Use the tags-list partial #}
+{% set tagslist = collections.tagList %}
+<div class="tags-list-wrapper">
+  {% include "tags-list.njk" %}
+  <span>[or, <a href="{{ '/' | url }}">home</a>]</span> {# Added home link #}
+</div>
+
+
+{# Display all posts #}
+{% set postslist = collections.posts %}
+{% include "posts-list.njk" %}

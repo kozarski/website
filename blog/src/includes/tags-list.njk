@@ -1,0 +1,20 @@
+<ul class="tags-list"> {# Use a list for semantics #}
+    {# Link to all posts #}
+    <li>
+        <a href="{{ '/posts/' | url }}">
+            #all<span class="tag-count">[{{ collections.posts.length }}]</span>
+        </a>
+        <span class="separator" aria-hidden="true"> ◦ </span> {# Separator #}
+    </li>
+
+    {# Loop through tags provided in tagslist #}
+    {% for tag in collections.tagList %}
+      {% set tagUrl %}/tags/{{ tag }}/{% endset %}
+      <li>
+        <a href="{{ tagUrl | url }}">
+            #{{ tag }}<span class="tag-count">[{{ collections[tag].length }}]</span>
+        </a>
+        {% if not loop.last %}<span class="separator" aria-hidden="true"> ◦ </span>{% endif %}{# Separator #}
+      </li>
+    {% endfor %}
+</ul>

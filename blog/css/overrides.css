@@ -1,0 +1,12 @@
+/* Override the hardcoded green dashed outlines */
+html body a:hover,
+html body a:focus,
+html body .dash-link:hover,
+html body .dash-link:focus,
+a:hover,
+a:focus,
+.dash-link:hover,
+.dash-link:focus {
+  outline: 2px dashed #ffdd00 !important;
+  outline-offset: 2px !important;
+} 

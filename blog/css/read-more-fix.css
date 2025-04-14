@@ -1,0 +1,24 @@
+/* Fix for the read more link hover effect */
+
+/* Target only the read-text class for transitions */
+.post-list__read-more .read-text {
+  display: inline-block;
+  vertical-align: middle;
+  transition: transform .3s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* Apply hover effect only to the text, not the dot */
+.post-list__read-more:hover .read-text {
+  transform: translate3d(-101%, 0, 0);
+}
+
+/* Override the generic span selector from main.css */
+.post-list__read-more > span.dot {
+  transition: none;
+  transform: none;
+}
+
+/* Override any hover effect on the dot */
+.post-list__read-more:hover > span.dot {
+  transform: none;
+} 
