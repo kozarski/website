@@ -14,7 +14,7 @@ layout: base.njk
       <span> | </span>
       <div class="post__tags" style="display: inline-block;">
         {% for tag in tags | pageTags %}
-          {% set tagUrl %}/tags/{{ tag }}/{% endset %}
+          {% set tagUrl %}tags/{{ tag }}/{% endset %}
           <a href="{{ tagUrl | url }}">#{{ tag }}</a>{% if not loop.last %} + {% endif %}
         {% endfor %}
       </div>
@@ -30,7 +30,7 @@ layout: base.njk
       {# Post navigation: show next and previous posts if available #}
       {%- set nextPost = collections.posts | getNextCollectionItem(page) %}
       {%- if nextPost %}
-        <a href="{{ nextPost.url | url }}">
+        <a href="{{ nextPost.url }}">
           <span>←</span>
           <span>{{ nextPost.data.title }}</span>
         </a>
@@ -38,7 +38,7 @@ layout: base.njk
 
       {%- set previousPost = collections.posts | getPreviousCollectionItem(page) %}
       {%- if previousPost %}
-        <a href="{{ previousPost.url | url }}">
+        <a href="{{ previousPost.url }}">
           <span>{{ previousPost.data.title }}</span>
           <span>→</span>
         </a>

@@ -11,7 +11,7 @@
           {% for tag in post.data.tags %}
             {# Only show tags that are in the tagList collection #}
             {%- if collections.tagList.indexOf(tag) != -1 -%}
-              {% set tagUrl %}/tags/{{ tag }}/{% endset %}
+              {% set tagUrl %}tags/{{ tag }}/{% endset %}
               <a href="{{ tagUrl | url }}">#{{ tag }}</a>{% if not loop.last %} <span class="tag-sep">+</span>{% endif %}
             {%- endif -%}
           {% endfor %}
