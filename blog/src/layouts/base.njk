@@ -3,16 +3,15 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <base href="/blog/">
     <link rel="canonical" href={{ page.url | absoluteUrl(site.url) }}>
-    <link rel="alternate" type="application/rss+xml" href="{{ '/feed.xml' | url }}" title="RSS Feed for {{ site.name }}">
-    <link rel="stylesheet" href="{{ '/css/main.css' | url }}">
-    <link rel="icon" type="image/png" href="{{ '/images/copyleft.png' | url }}">
-    <link rel="stylesheet" href="{{ '/css/header.css' | url }}">
-    <link rel="stylesheet" href="{{ '/css/footer.css' | url }}">
-    <link rel="stylesheet" href="{{ '/css/post-list.css' | url }}?v={{ build.timestamp }}">
-    <link rel="stylesheet" href="{{ '/css/post.css' | url }}">
-    <link rel="stylesheet" href="{{ '/css/prism-theme.css' | url }}">
+    <link rel="alternate" type="application/rss+xml" href="/blog/feed.xml" title="RSS Feed for {{ site.name }}">
+    <link rel="stylesheet" href="/blog/css/main.css">
+    <link rel="icon" type="image/png" href="/blog/images/copyleft.png">
+    <link rel="stylesheet" href="/blog/css/header.css">
+    <link rel="stylesheet" href="/blog/css/footer.css">
+    <link rel="stylesheet" href="/blog/css/post-list.css?v={{ build.timestamp }}">
+    <link rel="stylesheet" href="/blog/css/post.css">
+    <link rel="stylesheet" href="/blog/css/prism-theme.css">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,7 +41,7 @@
       <header class="header"> {# Uses theme-specific classes for layout #}
         <div class="header__content">
           <h1 class="site-title">
-            <a href="{{ '/' | url }}">{{site.name}}</a>
+            <a href="/blog/">{{site.name}}</a>
           </h1>
           {% if site.headerLinks %}
             <nav class="nav">
@@ -53,7 +52,7 @@
                     {% set currentAttribute = 'aria-current="page"' %}
                   {% endif %}
                   <li class="nav-item">
-                    <a href="{{ item.url | url }}" {{ currentAttribute | safe }}>{{ item.text }}</a>
+                    <a href="/blog{{ item.url }}" {{ currentAttribute | safe }}>{{ item.text }}</a>
                   </li>
                 {% endfor %}
               </ul>
