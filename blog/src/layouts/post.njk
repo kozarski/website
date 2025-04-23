@@ -14,7 +14,7 @@ layout: base.njk
       <span> | </span>
       <div class="post__tags" style="display: inline-block;">
         {% for tag in tags | pageTags %}
-          {% set tagUrl %}tags/{{ tag }}/{% endset %}
+          {% set tagUrl %}/tags/{{ tag }}/{% endset %}
           <a href="{{ tagUrl | url }}">#{{ tag }}</a>{% if not loop.last %} + {% endif %}
         {% endfor %}
       </div>
