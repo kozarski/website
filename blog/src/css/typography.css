@@ -13,14 +13,14 @@
 
 @font-face {
   font-family: "Maison Neue";
-  src: url("/fonts/3e0a37bc36e5a3325e58.woff2") format("woff2");
+  src: url("/blog/fonts/3e0a37bc36e5a3325e58.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Roboto Mono";
-  src: url("/fonts/535bc89d4af715503b01.woff2") format("woff2");
+  src: url("/blog/fonts/535bc89d4af715503b01.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
 }

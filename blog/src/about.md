@@ -2,7 +2,7 @@
 title: About Corey Kozarski
 layout: about.njk
 name: Corey Kozarski
-image: '/images/me.JPG'
+image: '/blog/images/me.JPG'
 ---
 
 Welcome -
