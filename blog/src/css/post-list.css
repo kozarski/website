@@ -1,0 +1,203 @@
+.tags > * {
+  margin-right: 1rem;
+  margin-top: 0.5rem;
+}
+
+.tags {
+  margin-top: 1rem;
+  font-size: var(--text-sm);
+  margin-bottom: 1rem;
+}
+
+.tags a {
+  text-decoration: none;
+  color: rgb(117, 117, 117);
+}
+
+.post-list__wrapper {
+  margin-top: 6rem;
+}
+
+.post-list__heading {
+  font-size: var(--text-3xl);
+  margin-bottom: 1rem;
+}
+
+.post-list {
+  list-style: none;
+}
+
+.post-list__item {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 3rem;
+  padding-top: 3rem;
+  border-top: 1px solid rgba(230, 230, 230, 1);
+}
+
+.post-list__item:last-child {
+  /* border-bottom: 1px solid rgba(230, 230, 230, 1); */
+}
+
+.post-list__title {
+  font-size: var(--text-1.5xl);
+  margin-top: 0.5rem;
+}
+
+.post-list__title a {
+  font-weight: normal;
+  text-decoration: none;
+  color: rgb(41, 41, 41);
+}
+
+.post-list__title a:hover {
+  /* color: var(--accent); */
+  text-decoration: underline;
+}
+
+.post-list__meta {
+  font-size: var(--text-sm);
+  margin-top: 1rem;
+  color: rgb(117, 117, 117);
+}
+
+.post-list__meta > * + * {
+  margin-left: 1rem;
+}
+
+.post-list__meta time {
+  vertical-align: middle;
+}
+
+.post-list__meta .dot-sep {
+  margin: 0 0.22em;
+  font-weight: bold;
+  font-size: 1em;
+  vertical-align: middle;
+}
+
+.post-list__meta .read-time {
+  margin: 0;
+  padding: 0;
+  display: inline;
+  vertical-align: middle;
+}
+
+.post-list__tags {
+  text-decoration: none;
+  font-size: var(--text-sm);
+  margin-top: 0.5rem;
+}
+
+.post-list__tags a {
+  margin: 0;
+  padding: 0;
+}
+
+.post-list__tags .tag-sep {
+  margin: 0 0.15em;
+  font-weight: bold;
+  display: inline;
+}
+
+.post-list__excerpt {
+  margin-top: 1rem;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+/* Basic styling for the read more link - use baseline alignment */
+.post-list__read-more {
+  display: inline-flex;
+  align-items: baseline; /* Align based on text baseline */
+  margin-top: 1rem;
+  color: inherit;
+  text-decoration: none;
+  transform: translateX(0);
+  transition: color 0.3s !important; /* ONLY transition color, override global transition: all */
+  position: relative;
+}
+
+/* The dot styling - rely on flexbox align-items: center */
+.dot {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 100%;
+  background: currentColor;
+  color: #000000;
+  margin-right: 0.4em;
+}
+
+/* Style for the text part of the read more link - rely on flexbox align-items: center */
+.read-more-text {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 10px; /* Space for the squiggle */
+}
+
+/* SVG positioning */
+.squiggle-svg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 9px;
+  pointer-events: none;
+}
+
+/* Animation for the path */
+.squiggle-svg path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.7, 0, 0.3, 1);
+}
+
+/* Show the squiggle on hover with proper animation */
+.post-list__read-more:hover .squiggle-svg path {
+  stroke-dashoffset: 0;
+  transition-timing-function: cubic-bezier(0.8, 1, 0.7, 1);
+  transition-duration: 0.3s;
+}
+
+/* Text color change on hover - prevent any movement */
+.post-list__read-more:hover {
+  color: #1254FF;
+}
+
+/* Fix: Prevent any link decorations that might cause movement */
+.post-list__read-more:hover .read-more-text {
+  text-decoration: none;
+}
+
+/* Make sure nothing moves on hover */
+.post-list__read-more:hover,
+.post-list__read-more:hover .read-more-text,
+.post-list__read-more:hover .dot {
+  transform: translateX(0); /* Lock horizontal position */
+  padding-left: 0; /* No padding changes */
+  margin-left: 0; /* No margin changes */
+}
+
+/* Make sure no other properties transition EXCEPT for the squiggle path */
+.post-list__read-more *:not(.squiggle-svg):not(.squiggle-svg path),
+.post-list__read-more:hover *:not(.squiggle-svg):not(.squiggle-svg path),
+.dot,
+.read-more-text {
+  transition: none !important; /* Override global transition */
+}
+
+.all-posts-link {
+  margin-top: 4rem;
+  width: fit-content;
+  display: inline-block;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: var(--text-lg);
+  text-decoration: underline;
+  color: currentColor;
+}
+
+/* Add spacing below the tag list + [or, home] link */
+.tags-list-wrapper {
+  margin-bottom: 1.5rem; /* Adjust value as needed */
+}

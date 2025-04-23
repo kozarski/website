@@ -1,0 +1,34 @@
+{
+  "name": "Blog",
+  "description": "A personal blog from Corey Kozarski.",
+  "url": "https://www.coreykozarski.com",
+  "author": {
+    "name": "Corey Kozarski",
+    "email": "coreykozarski@gmail.com",
+    "twitterHandle": ""
+  },
+  "defaultSocialImage": "",
+  "headerLinks": [
+    {
+      "text": "Posts",
+      "url": "/posts/",
+      "external": false
+    },
+    {
+      "text": "About",
+      "url": "/about/",
+      "external": false
+    }
+  ],
+  "socialLinks": [
+  ],
+  "footerLinks": [
+    {
+      "text": "RSS",
+      "url": "/feed.xml",
+      "external": true
+    }
+  ],
+  "quote": "stay curious.",
+  "showFooterAttribution": false
+}

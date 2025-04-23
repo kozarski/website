@@ -1,0 +1,116 @@
+/* Link hover effect with swipe animation */
+.post-list__title a,
+.site-title a,
+.post_content li a,
+.post__tags a,
+.post__pagination a,
+.tags-list a,
+.post-list__subheading a,
+.post-list__tags a,
+.all-posts-link,
+.hero__social-links a,
+.nav__list a,
+.post__details a {
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  z-index: 1;
+}
+
+.post-list__title a::before,
+.site-title a::before,
+.post_content li a::before,
+.post__tags a::before,
+.post__pagination a::before,
+.tags-list a::before,
+.post-list__subheading a::before,
+.post-list__tags a::before,
+.all-posts-link::before,
+.hero__social-links a::before,
+.nav__list a::before,
+.post__details a::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #CBFF12; /* Exact green color from squiggle SVG */
+  z-index: -1;
+  top: 0;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+.post-list__title a:hover::before,
+.site-title a:hover::before,
+.post_content li a:hover::before,
+.post__tags a:hover::before,
+.post__pagination a:hover::before,
+.tags-list a:hover::before,
+.post-list__subheading a:hover::before,
+.post-list__tags a:hover::before,
+.all-posts-link:hover::before,
+.hero__social-links a:hover::before,
+.nav__list a:hover::before,
+.post__details a:hover::before {
+  opacity: 1;
+  animation: coverUp 0.5s ease forwards;
+}
+
+/* Remove dashed outlines on hover */
+.post-list__title a:hover,
+.site-title a:hover,
+.post_content li a:hover,
+.post__tags a:hover,
+.post__pagination a:hover,
+.tags-list a:hover,
+.post-list__subheading a:hover,
+.post-list__tags a:hover,
+.all-posts-link:hover,
+.hero__social-links a:hover,
+.nav__list a:hover,
+.post__details a:hover {
+  outline: none;
+}
+
+@keyframes coverUp {
+  0% {
+    transform-origin: 50% 100%;
+    transform: scale3d(1, 0.045, 1);
+  }
+  50% {
+    transform-origin: 50% 100%;
+    transform: scale3d(1, 1, 1);
+  }
+  51% {
+    transform-origin: 50% 0%;
+    transform: scale3d(1, 1, 1);
+  }
+  100% {
+    transform-origin: 50% 0%;
+    transform: scale3d(1, 0.045, 1);
+  }
+}
+
+/* Styling for the "Based in Los Angeles..." text */
+.container > .main > p:first-of-type {
+  font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+  font-size: 0.95em;
+  background-color: rgba(0, 0, 0, 0.03);
+  padding: 1rem;
+  border-left: 3px solid #CBFF12;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  font-weight: 400;
+  white-space: pre-wrap;
+}
+
+/* Make squiggle hover effect only apply to read post links */
+.post-list__read-more:hover {
+  color: #1254FF;
+}
+
+.post-list__read-more::before {
+  display: none; /* Don't show the green swipe under read more links */
+}

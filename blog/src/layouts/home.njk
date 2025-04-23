@@ -1,0 +1,24 @@
+---
+layout: base
+---
+
+<header class="hero">
+  <div class="hero-content">
+    <div class="intro">
+      {{ content | safe }}
+    </div>
+
+    {# Social links removed from the original theme header #}
+  </div>
+</header>
+
+<section class="post-list__wrapper">
+  {# No "Recent Posts" heading per site design #}
+
+  {# Render the list of posts #}
+  {% set postslist = collections.posts %}
+  {% include "posts-list.njk" %}
+
+</section>
+
+<a class="all-posts-link" href="{{ '/posts/' | url }}">View All Posts</a> {# Link to the full posts archive #}

@@ -1,0 +1,82 @@
+.post {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.post > * + * {
+  margin-top: 4rem;
+}
+
+.post__details {
+  opacity: 0.6;
+  font-size: 0.9rem;
+}
+
+.post__details > * + * {
+  margin-left: 0.5rem;
+}
+
+.post__content {
+  word-wrap: break-word;
+}
+
+.post__aside {
+  margin-top: 2rem;
+}
+
+.post__tags {
+  opacity: 0.8;
+  font-size: var(--text-sm);
+}
+
+.post__tags * + * {
+  margin-left: 0.0rem; /* Adjust this value as necessary for spacing between tags */
+}
+
+.post__pagination {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.post__pagination > *:only-child {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.post__pagination a {
+  display: flex;
+  align-items: center;
+}
+.post__pagination span {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+/* this is a hack to make the list items smaller, look away */
+.post__content h1 + ul li,
+.post__content h2 + ul li,
+.post__content h3 + ul li,
+.post__content h4 + ul li,
+.post__content h5 + ul li,
+.post__content h6 + ul li {
+  margin-top: .25rem;
+  margin-bottom: .25rem;
+  font-size: 0.9em; /* Adjust this value - maybe try 0.85em or smaller */
+  color: var(--color-80); /* Optional: keeps text slightly lighter */
+}
+
+/* Style inline code elements within post content */
+.post__content p code,
+.post__content li code {
+  font-family: monospace;
+  font-size: 0.9em;
+  font-weight: bold;
+  color: #e2e2e2; /* Changed from var(--color) to Prism default */
+  background-color: #282c34; /* Darkened background from --color-10 */
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+  vertical-align: baseline;
+}
