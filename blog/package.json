@@ -6,8 +6,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "env ELEVENTY_ENV=development npx @11ty/eleventy --serve",
-    "build": "npm run build:site",
-    "build:site": "env ELEVENTY_ENV=production npx @11ty/eleventy"
+    "build:site": "env ELEVENTY_ENV=production npx @11ty/eleventy",
+    "build": "rm -rf ../_final_site && mkdir -p ../_final_site/blog && cp ../index.html ../_final_site/ && cp -R ../css ../_final_site/ && cp -R ../js ../_final_site/ && cp -R ../images ../_final_site/ && cp ../CNAME ../_final_site/ && npm run build:site && cp -R ./_site/. ../_final_site/blog/"
   },
   "devDependencies": {
     "@11ty/eleventy": "^3.0.0",

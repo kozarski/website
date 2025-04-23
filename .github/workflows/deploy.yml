@@ -4,7 +4,7 @@ name: Deploy Eleventy Site to Pages
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches: ["main"] # Or your default branch (e.g., master)
+    branches: ["main"] # Updated to main
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -45,8 +45,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload the output directory from the build step
-          path: './blog/_site' # Specify the correct build output path
+          # Upload the final combined directory from the build step
+          path: './_final_site' # Changed from ./blog/_site
 
   # Deployment job
   deploy:

@@ -9,6 +9,9 @@ blog/node_modules/
 # Ignore Eleventy build output directory
 blog/_site/
 
+# Ignore final combined site build directory
+_final_site/
+
 # DO NOT ignore the root /blog directory (built site)
 
 # Editor/IDE specific files
