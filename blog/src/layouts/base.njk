@@ -41,7 +41,7 @@
       <header class="header"> {# Uses theme-specific classes for layout #}
         <div class="header__content">
           <h1 class="site-title">
-            <a href="{{ '/blog/' | url }}">{{site.name}}</a>
+            <a href="{{ '/' | url }}">{{site.name}}</a>
           </h1>
           {% if site.headerLinks %}
             <nav class="nav">
@@ -52,7 +52,7 @@
                     {% set currentAttribute = 'aria-current="page"' %}
                   {% endif %}
                   <li class="nav-item">
-                    <a href="{{ item.url }}" {{ currentAttribute | safe }}>{{ item.text }}</a>
+                    <a href="{{ item.url | url }}" {{ currentAttribute | safe }}>{{ item.text }}</a>
                   </li>
                 {% endfor %}
               </ul>

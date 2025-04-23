@@ -1,6 +1,6 @@
 ---
 layout: base.njk
-permalink: /blog/posts/ # Corrected permalink for blog subfolder
+permalink: /posts/ # Correct permalink 
 ---
 
 <h2>Posts in: #all ({{ collections.posts | length }})</h2> {# Heading for all posts #}
@@ -9,7 +9,7 @@ permalink: /blog/posts/ # Corrected permalink for blog subfolder
 {% set tagslist = collections.tagList %}
 <div class="tags-list-wrapper">
   {% include "tags-list.njk" %}
-  <span>[or, <a href="{{ '/blog/' | url }}">home</a>]</span> {# Link back to homepage #}
+  <span>[or, <a href="{{ '/' | url }}">home</a>]</span> {# Link back to homepage #}
 </div>
 
 

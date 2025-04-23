@@ -11,12 +11,12 @@
   "headerLinks": [
     {
       "text": "Posts",
-      "url": "/blog/posts/",
+      "url": "/posts/",
       "external": false
     },
     {
       "text": "About",
-      "url": "/blog/about/",
+      "url": "/about/",
       "external": false
     }
   ],
@@ -25,7 +25,7 @@
   "footerLinks": [
     {
       "text": "RSS",
-      "url": "/blog/feed.xml",
+      "url": "/feed.xml",
       "external": true
     }
   ],
