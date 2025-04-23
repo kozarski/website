@@ -27,6 +27,30 @@
 .site-title a {
   color: rgb(6 6 6);
   text-decoration: none;
+  position: relative;
+}
+
+.site-title a::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -15px;
+  width: 10px;
+  height: 100%;
+  background-color: #CBFF12;
+  animation: blink 1.5s step-end infinite;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .site-title a:hover {

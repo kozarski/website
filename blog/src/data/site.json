@@ -1,9 +1,9 @@
 {
   "name": "Blog",
-  "description": "A personal blog from Corey.",
+  "description": "A personal blog from Corey Kozarski.",
   "url": "https://www.coreykozarski.com",
   "author": {
-    "name": "Corey",
+    "name": "Corey Kozarski",
     "email": "coreykozarski@gmail.com",
     "twitterHandle": ""
   },
@@ -29,6 +29,6 @@
       "external": true
     }
   ],
-  "quote": "stay curious, fail harder.",
+  "quote": "stay curious.",
   "showFooterAttribution": false
 }

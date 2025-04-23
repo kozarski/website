@@ -8,17 +8,17 @@ layout: base
       {{ content | safe }}
     </div>
 
-    {# Removed theme's social links from header #}
+    {# Social links removed from the original theme header #}
   </div>
 </header>
 
 <section class="post-list__wrapper">
-  {# Target site doesn't have "Recent Posts" heading here #}
+  {# No "Recent Posts" heading per site design #}
 
-  {# Show posts #}
+  {# Render the list of posts #}
   {% set postslist = collections.posts %}
   {% include "posts-list.njk" %}
 
 </section>
 
-<a class="all-posts-link" href="{{ '/posts/' | url }}">View All Posts</a> {# Corrected link #}
+<a class="all-posts-link" href="{{ '/posts/' | url }}">View All Posts</a> {# Link to the full posts archive #}

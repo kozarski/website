@@ -1,29 +1,30 @@
+{# Renders a list of posts with metadata, tags, and excerpt #}
 <ul class="post-list">
   {% for post in postslist | reverse %}
     <li class="post-list__item">
       <div>
         <div class="post-list__meta">
-          <time datetime="{{ post.date | htmlDateString }}">{{ post.date | readableDate('yyyy-MM-dd') }}</time>
-          <span class="read-time"> ◦ {{ post | readingTime }}</span>
+          <time datetime="{{ post.date | htmlDateString }}">{{ post.date | readableDate('yyyy-MM-dd') }}</time> <span class="dot-sep">◦</span> <span class="read-time">{{ post.templateContent | readingTime }}</span>
         </div>
 
         <div class="post-list__tags">
           {% for tag in post.data.tags %}
+            {# Only show tags that are in the tagList collection #}
             {%- if collections.tagList.indexOf(tag) != -1 -%}
               {% set tagUrl %}/tags/{{ tag }}/{% endset %}
-              <a href="{{ tagUrl | url }}">#{{ tag }}</a>{% if not loop.last %} & {% endif %}
+              <a href="{{ tagUrl | url }}">#{{ tag }}</a>{% if not loop.last %} <span class="tag-sep">+</span>{% endif %}
             {%- endif -%}
           {% endfor %}
         </div>
       </div>
 
       <h3 class="post-list__title">
-        <a  href="{{ post.url | url }}">{{ post.data.title }}</a>
+        <a href="{{ post.url }}">{{ post.data.title }}</a>
       </h3>
 
       <p class="post-list__excerpt">{{ (post.data.description or post.templateContent) | excerpt | safe  }}</p>
 
-      <a class="post-list__read-more" href="{{ post.url | url }}">
+      <a class="post-list__read-more" href="{{ post.url }}">
         <span class="dot"></span> 
         <span class="read-more-text">
           read post

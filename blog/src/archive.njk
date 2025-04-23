@@ -3,16 +3,16 @@ layout: base.njk
 permalink: /posts/ # Correct permalink
 ---
 
-<h2>Posts in: #all ({{ collections.posts | length }})</h2> {# Added heading #}
+<h2>Posts in: #all ({{ collections.posts | length }})</h2> {# Heading for all posts #}
 
-{# Use the tags-list partial #}
+{# Render the tags list partial #}
 {% set tagslist = collections.tagList %}
 <div class="tags-list-wrapper">
   {% include "tags-list.njk" %}
-  <span>[or, <a href="{{ '/' | url }}">home</a>]</span> {# Added home link #}
+  <span>[or, <a href="{{ '/' | url }}">home</a>]</span> {# Link back to homepage #}
 </div>
 
 
-{# Display all posts #}
+{# Render all posts using posts-list partial #}
 {% set postslist = collections.posts %}
 {% include "posts-list.njk" %}

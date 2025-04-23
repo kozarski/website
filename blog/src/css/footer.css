@@ -5,7 +5,7 @@
   max-width: none;
   width: 100%;
   padding: 2rem 1rem;
-  margin-top: 4rem;
+  margin-top: 1rem;
   /* background-color: #f8f8f8; */ /* Removed to keep clean white bg */
   text-align: center;
   color: #333;
@@ -24,7 +24,7 @@
 }
 
 .footer__content > * {
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 .footer__attribution {
@@ -43,10 +43,10 @@
 .footer-quote {
   font-size: .8rem;
   font-style: bold;
-  margin-bottom: 1rem;
+  margin-bottom: 0rem;
 }
 
-/* New shimmer effect */
+/* Shimmy shimmy ya effect */
 .shimmer {
   position: relative;
   background: linear-gradient(90deg, #222 0%, #fff 20%, #222 40%);
@@ -70,23 +70,23 @@
 
 @keyframes shine {
   from {
-    background-position: 200% center;
+    background-position: 100% center;
   }
   to {
-    background-position: -200% center;
+    background-position: -100% center;
   }
 }
 
-.footer__meta {
-  font-size: 0.875rem;
+.meta {
+  font-size: 0.75rem;
   color: #666;
 }
 
-.footer__meta a {
+.meta a {
   color: #333;
   text-decoration: underline;
 }
 
-.footer__meta a:hover {
+.meta a:hover {
   color: var(--accent-primary);
 }

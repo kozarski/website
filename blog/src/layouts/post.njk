@@ -10,7 +10,7 @@ layout: base.njk
         {{ page.date | readableDate }}
       </time>
       <span> | </span>
-      <span>{{ content | readingTime }} read</span>
+      <span>{{ content | readingTime }}</span>
       <span> | </span>
       <div class="post__tags" style="display: inline-block;">
         {% for tag in tags | pageTags %}
@@ -27,6 +27,7 @@ layout: base.njk
 
   <aside class="post__aside">
     <nav class="post__pagination">
+      {# Post navigation: show next and previous posts if available #}
       {%- set nextPost = collections.posts | getNextCollectionItem(page) %}
       {%- if nextPost %}
         <a href="{{ nextPost.url | url }}">

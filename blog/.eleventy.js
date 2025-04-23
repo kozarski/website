@@ -1,10 +1,11 @@
 const { DateTime } = require('luxon');
-const readingTime = require('eleventy-plugin-reading-time');
 const pluginRss = require('@11ty/eleventy-plugin-rss');
 const syntaxHighlight = require('@11ty/eleventy-plugin-syntaxhighlight');
 
+// Get environment (development or production)
+const isProduction = process.env.ELEVENTY_ENV === 'production';
+
 module.exports = function (eleventyConfig) {
-  eleventyConfig.addPlugin(readingTime);
   eleventyConfig.addPlugin(pluginRss);
   eleventyConfig.addPlugin(syntaxHighlight);
 
@@ -13,6 +14,7 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy({ "src/css": "css" }); // Explicit mapping
   eleventyConfig.addPassthroughCopy({ "src/images": "images" }); // Explicit mapping
   eleventyConfig.addPassthroughCopy({ "src/js": "js" }); // Explicit mapping for JavaScript files
+  eleventyConfig.addPassthroughCopy({ "src/fonts": "fonts" }); // Fonts directory for custom cursor and webfonts
 
   eleventyConfig.addFilter('excerpt', (postContent) => {
     if (typeof postContent !== 'string') { return ''; }
@@ -72,18 +74,34 @@ module.exports = function (eleventyConfig) {
     return [...tagSet].sort();
   });
 
+  // Custom Reading Time Filter
+  eleventyConfig.addFilter("readingTime", (content) => {
+    if (!content) {
+      return "0 min read";
+    }
+    // Strip HTML tags and count words
+    const text = content.replace(/<[^>]*>/g, '');
+    const wordsPerMinute = 200; // Average reading speed
+    const wordCount = text.split(/\s+/).length;
+    const minutes = Math.ceil(wordCount / wordsPerMinute);
+
+    if (minutes === 1) {
+      return "1 min read";
+    }
+    return `${minutes} min read`;
+  });
+
   return {
     dir: {
       input: 'src',
-      output: '../blog',
+      output: '_site',
       includes: 'includes',
       data: 'data',
       layouts: 'layouts'
     },
-    // passthroughFileCopy: true, // Remove deprecated flag
     templateFormats: ['html', 'njk', 'md'],
     htmlTemplateEngine: 'njk',
     markdownTemplateEngine: 'njk',
-    pathPrefix: "/blog/"
+    pathPrefix: isProduction ? "/blog/" : ""
   };
 };

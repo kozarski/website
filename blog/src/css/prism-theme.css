@@ -5,9 +5,9 @@
  */
 code[class*="language-"],
 pre[class*="language-"] {
-  color: #ABB2BF;
+  color: #DCDCDC;
   background: none;
-  font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+  font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
   text-align: left;
   white-space: pre;
   word-spacing: normal;
@@ -83,7 +83,7 @@ pre[class*="language-"] {
 .token.symbol,
 .token.attr-name,
 .token.deleted {
-  color: #d19a66;
+  color: #d19a66; /* Reverted from test yellow */
 }
 
 .token.string,
@@ -91,7 +91,7 @@ pre[class*="language-"] {
 .token.attr-value,
 .token.builtin,
 .token.inserted {
-  color: #98c379;
+  color: #98c379; /* Reverted from test yellow */
 }
 
 .token.operator,
@@ -104,7 +104,7 @@ pre[class*="language-"] {
 
 .token.atrule,
 .token.keyword {
-  color: #c678dd;
+  color: #c678dd; /* Reverted from test yellow */
 }
 
 .token.function {
@@ -128,6 +128,11 @@ pre[class*="language-"] {
 
 .token.entity {
   cursor: help;
+}
+
+/* Add rule for units */
+.token.unit {
+  color: #d19a66; /* Same color as numbers */
 }
 
 pre.line-numbers {

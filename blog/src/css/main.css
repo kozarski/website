@@ -9,6 +9,7 @@
 @import 'post.css';
 @import 'about.css';
 @import 'overrides.css';
+@import 'read-more-fix.css';
 
 .layout-wrapper {
   display: grid;
@@ -18,7 +19,7 @@
 
 .main {
   display: flex;
-  padding-bottom: 4rem;
+  padding-bottom: 1rem;
   flex-direction: column;
   padding-left: 1rem;
   padding-right: 1rem;

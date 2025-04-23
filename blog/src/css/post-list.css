@@ -36,11 +36,11 @@
 }
 
 .post-list__item:last-child {
-  border-bottom: 1px solid rgba(230, 230, 230, 1);
+  /* border-bottom: 1px solid rgba(230, 230, 230, 1); */
 }
 
 .post-list__title {
-  font-size: var(--text-2xl);
+  font-size: var(--text-1.5xl);
   margin-top: 0.5rem;
 }
 
@@ -65,6 +65,24 @@
   margin-left: 1rem;
 }
 
+.post-list__meta time {
+  vertical-align: middle;
+}
+
+.post-list__meta .dot-sep {
+  margin: 0 0.22em;
+  font-weight: bold;
+  font-size: 1em;
+  vertical-align: middle;
+}
+
+.post-list__meta .read-time {
+  margin: 0;
+  padding: 0;
+  display: inline;
+  vertical-align: middle;
+}
+
 .post-list__tags {
   text-decoration: none;
   font-size: var(--text-sm);
@@ -72,11 +90,14 @@
 }
 
 .post-list__tags a {
-  color: var(--fg-light);
+  margin: 0;
+  padding: 0;
 }
 
-.post-list__tags > * + * {
-  margin-left: 1rem;
+.post-list__tags .tag-sep {
+  margin: 0 0.15em;
+  font-weight: bold;
+  display: inline;
 }
 
 .post-list__excerpt {
@@ -103,7 +124,7 @@
   height: 0.7rem;
   border-radius: 100%;
   background: currentColor;
-  color: var(--accent-primary);
+  color: #000000;
   margin-right: 0.4em;
 }
 
@@ -128,14 +149,14 @@
 .squiggle-svg path {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  transition: stroke-dashoffset 0.6s cubic-bezier(0.7, 0, 0.3, 1) !important;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.7, 0, 0.3, 1);
 }
 
 /* Show the squiggle on hover with proper animation */
 .post-list__read-more:hover .squiggle-svg path {
   stroke-dashoffset: 0;
-  transition-timing-function: cubic-bezier(0.8, 1, 0.7, 1) !important;
-  transition-duration: 0.3s !important;
+  transition-timing-function: cubic-bezier(0.8, 1, 0.7, 1);
+  transition-duration: 0.3s;
 }
 
 /* Text color change on hover - prevent any movement */
@@ -174,4 +195,9 @@
   font-size: var(--text-lg);
   text-decoration: underline;
   color: currentColor;
+}
+
+/* Add spacing below the tag list + [or, home] link */
+.tags-list-wrapper {
+  margin-bottom: 1.5rem; /* Adjust value as needed */
 }
