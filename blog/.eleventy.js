@@ -102,6 +102,6 @@ module.exports = function (eleventyConfig) {
     templateFormats: ['html', 'njk', 'md'],
     htmlTemplateEngine: 'njk',
     markdownTemplateEngine: 'njk',
-    pathPrefix: isProduction ? "/blog/" : ""
+    pathPrefix: "/blog/"
   };
 };

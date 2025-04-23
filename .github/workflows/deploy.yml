@@ -1,5 +1,5 @@
 # Simple workflow for deploying static content to GitHub Pages
-name: Deploy Eleventy Site to Pages
+name: Deploy Website with Static Home and Eleventy Blog
 
 on:
   # Runs on pushes targeting the default branch
@@ -33,20 +33,28 @@ jobs:
         with:
           node-version: "20" # Use Node.js 20.x LTS
           cache: 'npm'
-          cache-dependency-path: blog/package-lock.json # Specify lock file location
+          cache-dependency-path: |
+            package-lock.json
+            blog/package-lock.json
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Install Dependencies
-        run: npm ci # Use clean install
-        working-directory: ./blog # Run in the blog directory
-      - name: Build with Eleventy
-        run: npm run build # Runs the build script defined in package.json
-        working-directory: ./blog # Run in the blog directory
+      - name: Install Root Dependencies
+        run: npm ci || npm install
+        
+      - name: Install Blog Dependencies
+        run: npm ci
+        working-directory: ./blog
+        
+      - name: Build Complete Site
+        run: npm run build
+        env:
+          ELEVENTY_ENV: production
+          
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload the output directory from the build step
-          path: './blog/_site' # Specify the correct build output path
+          # Upload the final site directory that includes both static site && blog
+          path: './_final_site'
 
   # Deployment job
   deploy:

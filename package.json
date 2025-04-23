@@ -1,0 +1,11 @@
+{
+  "name": "website",
+  "version": "1.0.0",
+  "description": "Personal website with static homepage and 11ty blog",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "build:blog": "cd blog && npm run build:site",
+    "dev:blog": "cd blog && npm run dev"
+  },
+  "license": "MIT"
+} 
