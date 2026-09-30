@@ -1,0 +1,62 @@
+name: Merge dependency updates
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+concurrency:
+  group: dependabot-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  merge:
+    if: >-
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Read Update Details
+        id: metadata
+        uses: dependabot/fetch-metadata@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Merge Passing Patch and Minor Updates
+        if: >-
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # Check the unprivileged build for this exact revision.
+          result=pending
+          for attempt in $(seq 1 90); do
+            result=$(gh api --method GET "repos/$GH_REPO/actions/workflows/checks.yml/runs" \
+              -f event=pull_request -f head_sha="$PR_HEAD" \
+              --jq '.workflow_runs | first | if . == null or .status != "completed" then "pending" else .conclusion end')
+            if [ "$result" = success ]; then
+              break
+            fi
+            if [ "$result" != pending ]; then
+              echo 'Site checks did not pass.'
+              exit 1
+            fi
+            sleep 10
+          done
+          if [ "$result" != success ]; then
+            echo 'Timed out waiting for site checks.'
+            exit 1
+          fi
+          gh pr merge "$PR_URL" --squash --match-head-commit "$PR_HEAD"
+          test "$(gh pr view "$PR_URL" --json state --jq .state)" = MERGED
+          # Token merges do not trigger push workflows.
+          gh workflow run deploy.yml --ref main
