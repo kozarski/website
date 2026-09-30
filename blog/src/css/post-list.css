@@ -35,12 +35,8 @@
   border-top: 1px solid rgba(230, 230, 230, 1);
 }
 
-.post-list__item:last-child {
-  /* border-bottom: 1px solid rgba(230, 230, 230, 1); */
-}
-
 .post-list__title {
-  font-size: var(--text-1.5xl);
+  font-size: var(--text-2xl);
   margin-top: 0.5rem;
 }
 
@@ -51,7 +47,6 @@
 }
 
 .post-list__title a:hover {
-  /* color: var(--accent); */
   text-decoration: underline;
 }
 
@@ -105,19 +100,17 @@
   color: rgba(0, 0, 0, 0.8);
 }
 
-/* Basic styling for the read more link - use baseline alignment */
 .post-list__read-more {
   display: inline-flex;
-  align-items: baseline; /* Align based on text baseline */
+  align-items: baseline;
   margin-top: 1rem;
   color: inherit;
   text-decoration: none;
   transform: translateX(0);
-  transition: color 0.3s !important; /* ONLY transition color, override global transition: all */
+  transition: color 0.3s !important;
   position: relative;
 }
 
-/* The dot styling - rely on flexbox align-items: center */
 .dot {
   display: inline-block;
   width: 0.7rem;
@@ -128,14 +121,12 @@
   margin-right: 0.4em;
 }
 
-/* Style for the text part of the read more link - rely on flexbox align-items: center */
 .read-more-text {
   position: relative;
   display: inline-block;
-  padding-bottom: 10px; /* Space for the squiggle */
+  padding-bottom: 10px;
 }
 
-/* SVG positioning */
 .squiggle-svg {
   position: absolute;
   bottom: 0;
@@ -145,45 +136,39 @@
   pointer-events: none;
 }
 
-/* Animation for the path */
 .squiggle-svg path {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
   transition: stroke-dashoffset 0.6s cubic-bezier(0.7, 0, 0.3, 1);
 }
 
-/* Show the squiggle on hover with proper animation */
 .post-list__read-more:hover .squiggle-svg path {
   stroke-dashoffset: 0;
   transition-timing-function: cubic-bezier(0.8, 1, 0.7, 1);
   transition-duration: 0.3s;
 }
 
-/* Text color change on hover - prevent any movement */
 .post-list__read-more:hover {
   color: #1254FF;
 }
 
-/* Fix: Prevent any link decorations that might cause movement */
 .post-list__read-more:hover .read-more-text {
   text-decoration: none;
 }
 
-/* Make sure nothing moves on hover */
 .post-list__read-more:hover,
 .post-list__read-more:hover .read-more-text,
 .post-list__read-more:hover .dot {
-  transform: translateX(0); /* Lock horizontal position */
-  padding-left: 0; /* No padding changes */
-  margin-left: 0; /* No margin changes */
+  transform: translateX(0);
+  padding-left: 0;
+  margin-left: 0;
 }
 
-/* Make sure no other properties transition EXCEPT for the squiggle path */
 .post-list__read-more *:not(.squiggle-svg):not(.squiggle-svg path),
 .post-list__read-more:hover *:not(.squiggle-svg):not(.squiggle-svg path),
 .dot,
 .read-more-text {
-  transition: none !important; /* Override global transition */
+  transition: none !important;
 }
 
 .all-posts-link {
@@ -197,7 +182,6 @@
   color: currentColor;
 }
 
-/* Add spacing below the tag list + [or, home] link */
 .tags-list-wrapper {
-  margin-bottom: 1.5rem; /* Adjust value as needed */
+  margin-bottom: 1.5rem;
 }

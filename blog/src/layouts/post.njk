@@ -14,16 +14,16 @@ layout: base.njk
       <span> | </span>
       <div class="post__tags" style="display: inline-block;">
         {% for tag in tags | pageTags %}
-          {% set tagUrl %}/blog/tags/{{ tag }}/{% endset %}
-          <a href="{{ tagUrl | url }}">#{{ tag }}</a>{% if not loop.last %} + {% endif %}
+          {% set tagUrl %}/tags/{{ tag }}/{% endset %}
+          <a href="{{ tagUrl }}">#{{ tag }}</a>{% if not loop.last %} + {% endif %}
         {% endfor %}
       </div>
     </div>
   </header>
 
-  <main class="post__content">
+  <div class="post__content">
     {{ content | safe }}
-  </main>
+  </div>
 
   <aside class="post__aside">
     <nav class="post__pagination">

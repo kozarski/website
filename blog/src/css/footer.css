@@ -1,12 +1,8 @@
 .footer {
-  padding-bottom: 4rem;
-  padding-left: 1rem;
-  padding-right: 1rem;
   max-width: none;
   width: 100%;
   padding: 2rem 1rem;
   margin-top: 1rem;
-  /* background-color: #f8f8f8; */ /* Removed to keep clean white bg */
   text-align: center;
   color: #333;
 }
@@ -27,10 +23,6 @@
   margin-top: 1rem;
 }
 
-.footer__attribution {
-  font-size: var(--text-sm);
-}
-
 .footer ul {
   list-style: none;
   display: flex;
@@ -42,11 +34,9 @@
 
 .footer-quote {
   font-size: .8rem;
-  font-style: bold;
   margin-bottom: 0rem;
 }
 
-/* Shimmy shimmy ya effect */
 .shimmer {
   position: relative;
   background: linear-gradient(90deg, #222 0%, #fff 20%, #222 40%);
@@ -62,8 +52,8 @@
   .shimmer {
     animation: none;
     background-position: center;
-    color: inherit; /* Ensure text is visible when animation is off */
-    background-clip: unset; /* Reset background clip */
+    color: inherit;
+    background-clip: unset;
     -webkit-background-clip: unset;
   }
 }

@@ -6,12 +6,12 @@ eleventyExcludeFromCollections: true
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>{{ site.name }}</title>
   <subtitle></subtitle>
-  <link href="{{ site.url }}{{ permalink }}" rel="self"/>
-  <link href="{{ site.url }}/"/>
+  <link href="{{ site.url }}{{ permalink | url }}" rel="self"/>
+  <link href="{{ site.url }}{{ '/' | url }}"/>
   {% if collections.posts | length %}
     <updated>{{ collections.posts | getNewestCollectionItemDate | dateToRfc3339 }}</updated>
   {% endif %}
-  <id>{{ site.url }}</id>
+  <id>{{ site.url }}{{ '/' | url }}</id>
   <author>
     <name>{{ site.author.name }}</name>
     <email>{{ site.author.email }}</email>
@@ -25,7 +25,7 @@ eleventyExcludeFromCollections: true
       <id>{{ absolutePostUrl }}</id>
       <content type="html">
         <![CDATA[
-      {{ post.templateContent | safe }}
+      {{ post.templateContent | renderTransforms(post.data.page, site.url) | safe }}
     ]]>
       </content>
     </entry>

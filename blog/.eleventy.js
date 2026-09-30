@@ -2,26 +2,22 @@ const { DateTime } = require('luxon');
 const pluginRss = require('@11ty/eleventy-plugin-rss');
 const syntaxHighlight = require('@11ty/eleventy-plugin-syntaxhighlight');
 
-// Get environment (development or production)
-const isProduction = process.env.ELEVENTY_ENV === 'production';
-
 module.exports = function (eleventyConfig) {
   eleventyConfig.addPlugin(pluginRss);
   eleventyConfig.addPlugin(syntaxHighlight);
 
   eleventyConfig.setDataDeepMerge(true);
 
-  eleventyConfig.addPassthroughCopy({ "src/css": "css" }); // Explicit mapping
-  eleventyConfig.addPassthroughCopy({ "src/images": "images" }); // Explicit mapping
-  eleventyConfig.addPassthroughCopy({ "src/js": "js" }); // Explicit mapping for JavaScript files
-  eleventyConfig.addPassthroughCopy({ "src/fonts": "fonts" }); // Fonts directory for custom cursor and webfonts
+  eleventyConfig.addPassthroughCopy({ 'src/css': 'css' });
+  eleventyConfig.addPassthroughCopy({ 'src/images': 'images' });
+  eleventyConfig.addPassthroughCopy({ 'src/fonts': 'fonts' });
 
   eleventyConfig.addFilter('excerpt', (postContent) => {
     if (typeof postContent !== 'string') { return ''; }
     const content = postContent.replace(/(<([^>]+)>)/gi, '');
     if (content.length <= 200) { return content; }
     const lastSpace = content.lastIndexOf(' ', 200);
-    return (lastSpace > 0 ? content.substr(0, lastSpace) : content.substr(0, 200)) + '...';
+    return content.slice(0, lastSpace > 0 ? lastSpace : 200) + '...';
   });
 
   eleventyConfig.addFilter('readableDate', (dateObj) => {
@@ -74,14 +70,12 @@ module.exports = function (eleventyConfig) {
     return [...tagSet].sort();
   });
 
-  // Custom Reading Time Filter
   eleventyConfig.addFilter("readingTime", (content) => {
     if (!content) {
       return "0 min read";
     }
-    // Strip HTML tags and count words
     const text = content.replace(/<[^>]*>/g, '');
-    const wordsPerMinute = 200; // Average reading speed
+    const wordsPerMinute = 200;
     const wordCount = text.split(/\s+/).length;
     const minutes = Math.ceil(wordCount / wordsPerMinute);
 
@@ -92,6 +86,7 @@ module.exports = function (eleventyConfig) {
   });
 
   return {
+    pathPrefix: '/blog/',
     dir: {
       input: 'src',
       output: '_site',
