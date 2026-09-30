@@ -54,11 +54,6 @@ video {
   height: auto;
 }
 
-img {
-  display: block;
-  max-width: 100%;
-}
-
 hr {
   width: 100%;
   border: none;
@@ -68,9 +63,7 @@ hr {
 }
 
 a {
-  text-decoration: none;
   color: inherit;
-  text-decoration: inherit;
   transition: all 200ms linear;
   text-decoration: underline;
 }
@@ -178,7 +171,6 @@ kbd {
   color: var(--accent);
   font-feature-settings: normal;
   background: var(--color-30);
-  color: var(--accent);
   padding: 1px 6px;
   margin: 0 2px;
   font-size: 0.95rem;

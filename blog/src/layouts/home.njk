@@ -7,18 +7,13 @@ layout: base
     <div class="intro">
       {{ content | safe }}
     </div>
-
-    {# Social links removed from the original theme header #}
   </div>
 </header>
 
 <section class="post-list__wrapper">
-  {# No "Recent Posts" heading per site design #}
-
-  {# Render the list of posts #}
   {% set postslist = collections.posts %}
   {% include "posts-list.njk" %}
 
 </section>
 
-<a class="all-posts-link" href="/blog/posts/">View All Posts</a> {# Link to the full posts archive #}
+<a class="all-posts-link" href="/posts/">View All Posts</a>

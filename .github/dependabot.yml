@@ -1,0 +1,31 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /blog
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Europe/London
+    assignees:
+      - kozarski
+    groups:
+      blog:
+        patterns: ['*']
+        update-types: [minor, patch]
+      blog-security:
+        applies-to: security-updates
+        patterns: ['*']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Europe/London
+    assignees:
+      - kozarski
+    groups:
+      actions:
+        patterns: ['*']
+        update-types: [minor, patch]

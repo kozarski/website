@@ -1,19 +1,9 @@
-# General ignores
 .DS_Store
 *.log
 *.env
-
-# Node dependencies for the blog project
-blog/node_modules/
-
-# Ignore Eleventy build output directory
+node_modules/
 blog/_site/
-
-# DO NOT ignore the root /blog directory (built site)
-
-# Editor/IDE specific files
+_final_site/
 .vscode/
 .idea/
-
-# Temporary files
 tmp/

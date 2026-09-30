@@ -32,7 +32,6 @@ So, in many ways, this blog is also a challenge to myself: **Share more. Documen
 ### Blog FAQ
 
 #### Since this is the first "real" post and the blog's launch, here are a few details about the site itself:
-####
 * The main body text is set in [IBM Plex Sans](https://www.ibm.com/plex/).
 * This site is built with the awesomely simple static site generator [Eleventy (11ty)](https://www.11ty.dev/).
 * What color is that green? It's `#CBFF12`.
@@ -76,6 +75,6 @@ So, in many ways, this blog is also a challenge to myself: **Share more. Documen
 
 ### More to come
 
-That's the plan, anyway. Thanks for stopping by. Feel free to [reach out](/about) if you have anything you want to connect about.
+That's the plan, anyway. Thanks for stopping by. Feel free to [reach out](/about/) if you have anything you want to connect about.
 
 Stay curious!
