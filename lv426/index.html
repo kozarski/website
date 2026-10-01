@@ -245,7 +245,20 @@ document.onmousewheel=mouse_wheel; if(window.addEventListener) window.addEventLi
 <div id="adsense" style="position:absolute;background-color:transparent;display:none">
 	</div>
 	
-	<audio src="ripley.mp3" autoplay="true" controls="false" hidden="true" loop="true"> 
+	<audio id="soundtrack" src="ripley.mp3" autoplay hidden loop preload="auto"></audio>
+	<script>
+		{
+			const sound = document.getElementById('soundtrack');
+			const interactions = ['click', 'touchend', 'keydown'];
+			const playSound = () => sound.play().catch(() => {});
+
+			interactions.forEach(type => document.addEventListener(type, playSound, { passive: true }));
+			// Stop listening once playback starts; the track keeps looping on its own.
+			sound.addEventListener('playing', () => {
+				interactions.forEach(type => document.removeEventListener(type, playSound));
+			}, { once: true });
+		}
+	</script>
 </body>
 
 
