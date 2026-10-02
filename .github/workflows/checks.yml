@@ -26,12 +26,20 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-          cache-dependency-path: blog/package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            blog/package-lock.json
+      - name: Install Playground Dependencies
+        run: npm ci --ignore-scripts
       - name: Install Blog Dependencies
         run: npm ci --prefix blog --ignore-scripts
       - name: Build Website
         run: npm run build
       - name: Check Site Links
         run: npm run check
+      - name: Check Sandwich Physics
+        run: npm run test:sandwich
+      - name: Audit Playground Dependencies
+        run: npm audit
       - name: Audit Dependencies
         run: npm audit --prefix blog

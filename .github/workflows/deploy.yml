@@ -28,9 +28,13 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-          cache-dependency-path: blog/package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            blog/package-lock.json
       - name: Setup Pages
         uses: actions/configure-pages@v6
+      - name: Install Playground Dependencies
+        run: npm ci --ignore-scripts
       - name: Install Blog Dependencies
         run: npm ci --ignore-scripts
         working-directory: ./blog
@@ -38,6 +42,8 @@ jobs:
         run: npm run build
       - name: Check Site Links
         run: npm run check
+      - name: Check Sandwich Physics
+        run: npm run test:sandwich
       - name: Audit Dependencies
         run: npm audit --prefix blog
       - name: Upload Website

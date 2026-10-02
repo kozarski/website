@@ -19,11 +19,21 @@ const siteFiles = [
   'finder',
   'lv426',
   'pride',
+  'sandwich/index.html',
+  'sandwich/style.css',
+  'sandwich/favicon.svg',
+  'sandwich/fonts/comico.css',
+  'sandwich/audio/service-bell-double.mp3',
+  'sandwich/app.bundle.js',
+  'sandwich/app.bundle.js.LEGAL.txt',
+  'sandwich/THIRD_PARTY_NOTICES.txt',
   'pixel/index.html',
   'pixel/css',
   'pixel/js',
   'pixel/LICENSE'
 ];
+
+execFileSync('npm', ['run', 'build:sandwich'], { cwd: rootDir, stdio: 'inherit' });
 
 fs.rmSync(blogSiteDir, { recursive: true, force: true });
 execFileSync('npm', ['run', 'build:site'], {
