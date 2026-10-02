@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'Zodiak';
-  src: url('https://cdn.fontshare.com/wf/UDGW4K5KDO2WNP2256GU5CP7HQDVADLQ/LML445TYWQT7TRPDYZPCIVB3BJWX7NTD/2O5TXCJMYUDHI5FO6N4PXN6WNROSBHNU.woff2') format('woff2');
+  src: url('/fonts/zodiak-variable.fbc0b605217b.woff2') format('woff2');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -8,7 +8,7 @@
 
 @font-face {
   font-family: 'Tanker';
-  src: url('https://cdn.fontshare.com/wf/ATKS7EHYU4PKFTXRA4UFAHPY7XS75QMY/OYTCFLQCR7FVKK7FIO7TCJPY4YG22I3S/GKSURDSYOFIC3Y6F5SMWSENDSAB2YMKC.woff2') format('woff2');
+  src: url('/fonts/tanker-regular.98d0d534c2b6.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -16,7 +16,7 @@
 
 @font-face {
   font-family: 'JetBrains Mono';
-  src: url('https://cdn.fontshare.com/wf/TZ2PMVPWEVHUPJWOPNSWLOXAF6QPOEMZ/O4OZKA7ZLZGT4JOGT5IEKURK6U3RXYGM/EO5MKE3BUDOZN44BP4HDPXAJAC2BIMCD.woff2') format('woff2');
+  src: url('/fonts/jetbrains-mono-regular.2dc43470e34a.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;

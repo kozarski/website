@@ -2,8 +2,8 @@
    ITF Free Font License: https://www.fontshare.com/licenses/itf-ffl */
 @font-face {
   font-family: 'Comico';
-  src: url('https://cdn.fontshare.com/wf/JG4NGFFWT2HJYB7L7ZXECL4KOOUIMEUO/RGWEPIOJPQ67UAWIIZDGD3UYLRP6VDWK/SC6IR6E3ASQGIEU7T7E4OJ3CQML6SVGO.woff2') format('woff2');
+  src: url('./comico-regular.ff3e3214ef73.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
-  font-display: block;
+  font-display: swap;
 }

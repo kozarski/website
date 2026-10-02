@@ -1,0 +1,29 @@
+{
+  "name": "Site font caching",
+  "kind": "zone",
+  "phase": "http_response_cache_settings",
+  "description": "Long caching for the site's versioned WOFF2 files, successful responses only.",
+  "rules": [
+    {
+      "ref": "versioned_site_fonts",
+      "description": "Versioned fonts: browser 1 year, Cloudflare 30 days",
+      "expression": "http.host eq \"www.coreykozarski.com\" and http.response.code in {200 206 304} and http.request.uri.path in {\"/fonts/aktura-regular.537e4b41ea19.woff2\" \"/fonts/jetbrains-mono-regular.2dc43470e34a.woff2\" \"/fonts/press-start-2p-400-cyrillic-ext.5b109787a834.woff2\" \"/fonts/press-start-2p-400-cyrillic.3d05f2899537.woff2\" \"/fonts/press-start-2p-400-greek.72b641c5c922.woff2\" \"/fonts/press-start-2p-400-latin-ext.3e1ea894dba1.woff2\" \"/fonts/press-start-2p-400-latin.42144b97bd29.woff2\" \"/fonts/space-mono-400-latin-ext.b4f90459adf4.woff2\" \"/fonts/space-mono-400-latin.e0c8e616bda2.woff2\" \"/fonts/space-mono-400-vietnamese.1ab5cb4b90a5.woff2\" \"/fonts/space-mono-700-latin-ext.512458b32bf4.woff2\" \"/fonts/space-mono-700-latin.af7cf6d2b897.woff2\" \"/fonts/space-mono-700-vietnamese.e9c42e9aad5b.woff2\" \"/fonts/tanker-regular.98d0d534c2b6.woff2\" \"/fonts/zodiak-variable.fbc0b605217b.woff2\" \"/sandwich/fonts/comico-regular.ff3e3214ef73.woff2\" \"/blog/fonts/3e0a37bc36e5a3325e58.woff2\" \"/blog/fonts/535bc89d4af715503b01.woff2\"}",
+      "action": "set_cache_control",
+      "action_parameters": {
+        "max-age": {
+          "operation": "set",
+          "value": 31536000
+        },
+        "s-maxage": {
+          "operation": "set",
+          "value": 2592000,
+          "cloudflare_only": true
+        },
+        "immutable": {
+          "operation": "set"
+        }
+      },
+      "enabled": true
+    }
+  ]
+}

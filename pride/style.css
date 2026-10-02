@@ -1,3 +1,12 @@
+/* Aktura. Copyright Indian Type Foundry. ITF Free Font License. */
+@font-face {
+  font-family: 'Aktura';
+  src: url('/fonts/aktura-regular.537e4b41ea19.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   color-scheme: light;
   background: #f8f8f8;
