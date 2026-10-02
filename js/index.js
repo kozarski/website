@@ -89,6 +89,66 @@ if (projects) {
   });
 
   projects.classList.add('projects-ready');
+
+  // Keep the first five entries compact on desktop; mobile shows the full list.
+  const extraRows = rows.slice(5);
+  if (extraRows.length) {
+    const desktop = matchMedia('(min-width: 701px)');
+    const page = projects.closest('.projects-page');
+    const content = page.querySelector('.content');
+    const more = document.createElement('button');
+    const extra = document.createElement('div');
+    let expanded = false;
+
+    more.type = 'button';
+    more.className = 'projects-more';
+    more.setAttribute('aria-controls', 'more-projects');
+    more.textContent = `More projects (${extraRows.length})`;
+    extra.id = 'more-projects';
+    extraRows.forEach(row => extra.append(row));
+    // The control disappears on expansion, leaving the rows in one continuous list.
+    projects.append(more, extra);
+
+    function updateProjects() {
+      const showAll = !desktop.matches || expanded;
+      more.hidden = !desktop.matches || expanded;
+      if (!showAll) {
+        if (extra.contains(document.activeElement)) more.focus({ preventScroll: true });
+        extraRows.forEach(row => setOpen(row, false));
+      }
+      more.setAttribute('aria-expanded', String(showAll));
+      extra.hidden = !showAll;
+    }
+
+    more.addEventListener('click', event => {
+      // Grow downward from the compact layout without moving the navigation.
+      page.style.setProperty('--projects-compact-height', `${content.getBoundingClientRect().height}px`);
+      page.classList.add('is-expanded');
+      expanded = true;
+      updateProjects();
+      if (event.detail === 0) {
+        extraRows[0].querySelector('.project-link').focus({ preventScroll: true });
+      }
+    });
+
+    desktop.addEventListener('change', () => {
+      const focusExtra = !desktop.matches && document.activeElement === more;
+      updateProjects();
+      if (focusExtra) extraRows[0].querySelector('.project-link').focus({ preventScroll: true });
+    });
+
+    window.addEventListener('pageshow', event => {
+      if (!event.persisted) return;
+      // A browser Back navigation should start with the compact list again, too.
+      expanded = false;
+      page.classList.remove('is-expanded');
+      page.style.removeProperty('--projects-compact-height');
+      rows.forEach(row => setOpen(row, false));
+      updateProjects();
+    });
+
+    updateProjects();
+  }
 }
 
 const preview = document.querySelector('.gif-preview');
