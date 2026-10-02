@@ -7,3 +7,9 @@ _final_site/
 .vscode/
 .idea/
 tmp/
+sandwich/app.bundle.js
+sandwich/app.bundle.js.map
+sandwich/app.bundle.js.LEGAL.txt
+sandwich/THIRD_PARTY_NOTICES.txt
+sandwich/tests/performance.bundle.js
+sandwich/tests/performance.bundle.js.LEGAL.txt
