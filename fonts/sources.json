@@ -1,0 +1,114 @@
+{
+  "zodiak-variable": {
+    "family": "Zodiak",
+    "path": "fonts/zodiak-variable.fbc0b605217b.woff2",
+    "source": "https://cdn.fontshare.com/wf/UDGW4K5KDO2WNP2256GU5CP7HQDVADLQ/LML445TYWQT7TRPDYZPCIVB3BJWX7NTD/2O5TXCJMYUDHI5FO6N4PXN6WNROSBHNU.woff2",
+    "sha256": "fbc0b605217b43e22005ec128d5939a3334efc3eef24f13830fa5bf2fcd13a68",
+    "bytes": 37352
+  },
+  "tanker-regular": {
+    "family": "Tanker",
+    "path": "fonts/tanker-regular.98d0d534c2b6.woff2",
+    "source": "https://cdn.fontshare.com/wf/ATKS7EHYU4PKFTXRA4UFAHPY7XS75QMY/OYTCFLQCR7FVKK7FIO7TCJPY4YG22I3S/GKSURDSYOFIC3Y6F5SMWSENDSAB2YMKC.woff2",
+    "sha256": "98d0d534c2b60bd393adcbc392d5071165a4e9afa84e2babf8534bb0293307ea",
+    "bytes": 19236
+  },
+  "jetbrains-mono-regular": {
+    "family": "JetBrains Mono",
+    "path": "fonts/jetbrains-mono-regular.2dc43470e34a.woff2",
+    "source": "https://cdn.fontshare.com/wf/TZ2PMVPWEVHUPJWOPNSWLOXAF6QPOEMZ/O4OZKA7ZLZGT4JOGT5IEKURK6U3RXYGM/EO5MKE3BUDOZN44BP4HDPXAJAC2BIMCD.woff2",
+    "sha256": "2dc43470e34a95cb89a3d8ce41856205ddb3a2b98753b5eff371d76048868e23",
+    "bytes": 51432
+  },
+  "comico-regular": {
+    "family": "Comico",
+    "path": "sandwich/fonts/comico-regular.ff3e3214ef73.woff2",
+    "source": "https://cdn.fontshare.com/wf/JG4NGFFWT2HJYB7L7ZXECL4KOOUIMEUO/RGWEPIOJPQ67UAWIIZDGD3UYLRP6VDWK/SC6IR6E3ASQGIEU7T7E4OJ3CQML6SVGO.woff2",
+    "sha256": "ff3e3214ef73f328a6e892077ec458af29c80b54114061c64d6add7415158111",
+    "bytes": 303560
+  },
+  "aktura-regular": {
+    "family": "Aktura",
+    "path": "fonts/aktura-regular.537e4b41ea19.woff2",
+    "source": "https://cdn.fontshare.com/wf/NIVDH3M5EHMOFQLFSO44DGIVRSURZ2LO/UBHE7HWG6SMKX5EOD4TITKPDUJOMJVMC/UI4W6M6UVXNFLVDCI5G55QMMEE26RWQZ.woff2",
+    "sha256": "537e4b41ea198a3d1dff1bb2722d29605c868dc0d969f7da0021330cb7b4de51",
+    "bytes": 31468
+  },
+  "press-start-2p-400-cyrillic-ext": {
+    "family": "Press Start 2P",
+    "path": "fonts/press-start-2p-400-cyrillic-ext.5b109787a834.woff2",
+    "source": "https://fonts.gstatic.com/s/pressstart2p/v16/e3t4euO8T-267oIAQAu6jDQyK3nYivNm4I81PZQ.woff2",
+    "sha256": "5b109787a8340d7601ac9862c460c26203482b8080b2b091bbbdb1134abcd2fc",
+    "bytes": 2488
+  },
+  "press-start-2p-400-cyrillic": {
+    "family": "Press Start 2P",
+    "path": "fonts/press-start-2p-400-cyrillic.3d05f2899537.woff2",
+    "source": "https://fonts.gstatic.com/s/pressstart2p/v16/e3t4euO8T-267oIAQAu6jDQyK3nRivNm4I81PZQ.woff2",
+    "sha256": "3d05f28995376b8282c084d6b115979a5503c1f1416fa57e7037d66ee787e91b",
+    "bytes": 2656
+  },
+  "press-start-2p-400-greek": {
+    "family": "Press Start 2P",
+    "path": "fonts/press-start-2p-400-greek.72b641c5c922.woff2",
+    "source": "https://fonts.gstatic.com/s/pressstart2p/v16/e3t4euO8T-267oIAQAu6jDQyK3nWivNm4I81PZQ.woff2",
+    "sha256": "72b641c5c922703e49f53c86277c12e763b6772d250b84fce5a60affbbd8fd96",
+    "bytes": 2408
+  },
+  "press-start-2p-400-latin-ext": {
+    "family": "Press Start 2P",
+    "path": "fonts/press-start-2p-400-latin-ext.3e1ea894dba1.woff2",
+    "source": "https://fonts.gstatic.com/s/pressstart2p/v16/e3t4euO8T-267oIAQAu6jDQyK3nbivNm4I81PZQ.woff2",
+    "sha256": "3e1ea894dba11389007b78e4f6ce1a1c70542fe66cda38f7de48deff0d89c372",
+    "bytes": 3704
+  },
+  "press-start-2p-400-latin": {
+    "family": "Press Start 2P",
+    "path": "fonts/press-start-2p-400-latin.42144b97bd29.woff2",
+    "source": "https://fonts.gstatic.com/s/pressstart2p/v16/e3t4euO8T-267oIAQAu6jDQyK3nVivNm4I81.woff2",
+    "sha256": "42144b97bd2942ea606e5d880684eae0f7be5c804bdd57b1faac5a8d7699ae6e",
+    "bytes": 4704
+  },
+  "space-mono-400-vietnamese": {
+    "family": "Space Mono",
+    "path": "fonts/space-mono-400-vietnamese.1ab5cb4b90a5.woff2",
+    "source": "https://fonts.gstatic.com/s/spacemono/v17/i7dPIFZifjKcF5UAWdDRYE58RXi4EwSsbg.woff2",
+    "sha256": "1ab5cb4b90a56d6031db3618250a1f1bb52a275df5a0ec9ae8e62686550f1af4",
+    "bytes": 4116
+  },
+  "space-mono-400-latin-ext": {
+    "family": "Space Mono",
+    "path": "fonts/space-mono-400-latin-ext.b4f90459adf4.woff2",
+    "source": "https://fonts.gstatic.com/s/spacemono/v17/i7dPIFZifjKcF5UAWdDRYE98RXi4EwSsbg.woff2",
+    "sha256": "b4f90459adf4851575a46d9a492c17ee34c97fe40d56979521de67d1ee77d75a",
+    "bytes": 9752
+  },
+  "space-mono-400-latin": {
+    "family": "Space Mono",
+    "path": "fonts/space-mono-400-latin.e0c8e616bda2.woff2",
+    "source": "https://fonts.gstatic.com/s/spacemono/v17/i7dPIFZifjKcF5UAWdDRYEF8RXi4EwQ.woff2",
+    "sha256": "e0c8e616bda27642f4c3cebaecff6525d901e73afc8a227cbbb0f2af4810f300",
+    "bytes": 9464
+  },
+  "space-mono-700-vietnamese": {
+    "family": "Space Mono",
+    "path": "fonts/space-mono-700-vietnamese.e9c42e9aad5b.woff2",
+    "source": "https://fonts.gstatic.com/s/spacemono/v17/i7dMIFZifjKcF5UAWdDRaPpZUFqaHi6WZ3S_Yg.woff2",
+    "sha256": "e9c42e9aad5bf74da01a810f8777a1ce45d924c4f28faf3a19b046b8f813321c",
+    "bytes": 4168
+  },
+  "space-mono-700-latin-ext": {
+    "family": "Space Mono",
+    "path": "fonts/space-mono-700-latin-ext.512458b32bf4.woff2",
+    "source": "https://fonts.gstatic.com/s/spacemono/v17/i7dMIFZifjKcF5UAWdDRaPpZUFuaHi6WZ3S_Yg.woff2",
+    "sha256": "512458b32bf452ac0e4b33fd6277bf4f07821acefb59db2d1498aa107679a1a6",
+    "bytes": 9732
+  },
+  "space-mono-700-latin": {
+    "family": "Space Mono",
+    "path": "fonts/space-mono-700-latin.af7cf6d2b897.woff2",
+    "source": "https://fonts.gstatic.com/s/spacemono/v17/i7dMIFZifjKcF5UAWdDRaPpZUFWaHi6WZ3Q.woff2",
+    "sha256": "af7cf6d2b897ec453acdcdacde4e9bcc8410718af5914de865b453e09f10eebc",
+    "bytes": 9552
+  }
+}
