@@ -5,9 +5,12 @@
   "scripts": {
     "build": "node scripts/build.js",
     "build:blog": "npm --prefix blog run build:site",
+    "build:sandwich": "node scripts/sandwich.mjs",
+    "dev:sandwich": "node scripts/sandwich.mjs --serve",
     "test:sandwich": "node --test sandwich/tests/*.test.mjs",
     "dev:blog": "npm --prefix blog run dev --",
-    "check": "node scripts/check.js"
+    "check": "node scripts/check.js",
+    "review:sandwich-performance": "node scripts/sandwich.mjs --performance"
   },
   "license": "MIT",
   "dependencies": {
