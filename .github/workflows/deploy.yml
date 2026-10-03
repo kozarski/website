@@ -45,7 +45,9 @@ jobs:
       - name: Check Sandwich Physics
         run: npm run test:sandwich
       - name: Audit Dependencies
-        run: npm audit --prefix blog
+        run: |
+          npm run test:audit
+          npm run audit:blog
       - name: Upload Website
         uses: actions/upload-pages-artifact@v5
         with:

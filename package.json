@@ -10,6 +10,8 @@
     "test:sandwich": "node --test sandwich/tests/*.test.mjs",
     "dev:blog": "npm --prefix blog run dev --",
     "check": "node scripts/check.js",
+    "audit:blog": "node scripts/audit-blog.js",
+    "test:audit": "node --test scripts/tests/audit-blog.test.js",
     "review:sandwich-performance": "node scripts/sandwich.mjs --performance"
   },
   "license": "MIT",

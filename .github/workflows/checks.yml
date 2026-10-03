@@ -42,4 +42,6 @@ jobs:
       - name: Audit Playground Dependencies
         run: npm audit
       - name: Audit Dependencies
-        run: npm audit --prefix blog
+        run: |
+          npm run test:audit
+          npm run audit:blog
