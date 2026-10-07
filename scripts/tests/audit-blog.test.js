@@ -27,6 +27,92 @@ function fixture() {
   };
 }
 
+function combinedFixture() {
+  const { report, lock } = fixture();
+  Object.assign(report.vulnerabilities, {
+    'sprintf-js': {
+      nodes: ['node_modules/sprintf-js'],
+      via: [{ name: 'sprintf-js', url: 'https://github.com/advisories/GHSA-hp3w-g68c-fv3c' }]
+    },
+    argparse: { nodes: ['node_modules/gray-matter/node_modules/argparse'], via: ['sprintf-js'] },
+    'js-yaml': { nodes: ['node_modules/gray-matter/node_modules/js-yaml'], via: ['argparse'] },
+    'gray-matter': { nodes: ['node_modules/gray-matter'], via: ['js-yaml'] }
+  });
+  report.vulnerabilities.eleventy.via.push('gray-matter');
+  Object.assign(lock.packages, {
+    'node_modules/sprintf-js': { version: '1.0.3', dev: true },
+    'node_modules/gray-matter/node_modules/argparse': { version: '1.0.10', dev: true },
+    'node_modules/gray-matter/node_modules/js-yaml': { version: '3.15.2', dev: true },
+    'node_modules/gray-matter': { version: '4.0.3', dev: true }
+  });
+  return { report, lock };
+}
+
+const sprintfChain = ['eleventy', 'sprintf-js', 'argparse', 'js-yaml', 'gray-matter'];
+
+test('excepts both reviewed development advisories at their shared parent', () => {
+  const { report, lock } = combinedFixture();
+  assert.deepEqual(evaluateAudit(report, lock, now), {
+    excepted: Object.keys(report.vulnerabilities), blocked: []
+  });
+});
+
+test('excepts sprintf-js independently of the braces finding', () => {
+  const { report, lock } = combinedFixture();
+  delete report.vulnerabilities.braces;
+  delete report.vulnerabilities.chokidar;
+  report.vulnerabilities.eleventy.via = ['gray-matter'];
+  assert.deepEqual(evaluateAudit(report, lock, now), { excepted: sprintfChain, blocked: [] });
+});
+
+test('blocks both advisories at the unchanged expiry boundary', () => {
+  const { report, lock } = combinedFixture();
+  assert.deepEqual(evaluateAudit(report, lock, new Date('2026-10-17T00:00:00Z')), {
+    excepted: [], blocked: Object.keys(report.vulnerabilities)
+  });
+});
+
+test('blocks runtime, missing, and unreviewed versions of sprintf-js', () => {
+  for (const replacement of [{ version: '1.0.3' }, undefined, { version: '1.1.3', dev: true }]) {
+    const { report, lock } = combinedFixture();
+    lock.packages['node_modules/sprintf-js'] = replacement;
+    assert.deepEqual(evaluateAudit(report, lock, now).blocked, sprintfChain);
+  }
+});
+
+test('blocks a new advisory on sprintf-js and every affected parent', () => {
+  const { report, lock } = combinedFixture();
+  report.vulnerabilities['sprintf-js'].via.push({ name: 'sprintf-js', url: 'https://github.com/advisories/new' });
+  assert.deepEqual(evaluateAudit(report, lock, now), {
+    excepted: ['braces', 'chokidar'], blocked: sprintfChain
+  });
+});
+
+test('blocks an unreviewed second installation of sprintf-js', () => {
+  const { report, lock } = combinedFixture();
+  const node = 'node_modules/other/node_modules/sprintf-js';
+  report.vulnerabilities['sprintf-js'].nodes.push(node);
+  lock.packages[node] = { version: '1.1.3', dev: true };
+  assert.deepEqual(evaluateAudit(report, lock, now).blocked, sprintfChain);
+});
+
+test('blocks a runtime parent in the sprintf-js chain', () => {
+  const { report, lock } = combinedFixture();
+  delete lock.packages['node_modules/gray-matter'].dev;
+  assert.deepEqual(evaluateAudit(report, lock, now).blocked, ['eleventy', 'gray-matter']);
+});
+
+test('requires the advisory package name and URL to match the exception', () => {
+  for (const cause of [
+    { name: 'braces', url: 'https://github.com/advisories/GHSA-hp3w-g68c-fv3c' },
+    { name: 'sprintf-js', url: 'https://github.com/advisories/GHSA-vfj7-8cjw-p6xm' }
+  ]) {
+    const { report, lock } = combinedFixture();
+    report.vulnerabilities['sprintf-js'].via = [cause];
+    assert.deepEqual(evaluateAudit(report, lock, now).blocked, sprintfChain);
+  }
+});
+
 test('passes a clean report after the exception expires', () => {
   assert.deepEqual(evaluateAudit({ auditReportVersion: 2, vulnerabilities: {} }, {},
     new Date('2026-10-18T00:00:00Z')), { excepted: [], blocked: [] });

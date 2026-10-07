@@ -2,11 +2,14 @@ const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const advisory = 'https://github.com/advisories/GHSA-vfj7-8cjw-p6xm';
 const expires = '2026-10-17T00:00:00Z';
+const exceptions = [
+  { name: 'braces', version: '3.0.3', url: 'https://github.com/advisories/GHSA-vfj7-8cjw-p6xm' },
+  { name: 'sprintf-js', version: '1.0.3', url: 'https://github.com/advisories/GHSA-hp3w-g68c-fv3c' }
+];
 
-// No patched braces release exists. Only repository-controlled watch patterns
-// reach it, and the deployed site is static. See blog/README.md for the review.
+// No patched releases exist for these development-only dependencies. The
+// deployed site is static. See blog/README.md for exposure and removal criteria.
 function evaluateAudit(report, lock, now = new Date()) {
   if (report.error || report.auditReportVersion !== 2 || !report.vulnerabilities ||
       typeof report.vulnerabilities !== 'object' || Array.isArray(report.vulnerabilities)) {
@@ -24,8 +27,9 @@ function evaluateAudit(report, lock, now = new Date()) {
     const visited = new Set([...ancestors, name]);
     return finding.via.every(cause => {
       if (typeof cause === 'string') return isExcepted(cause, visited);
-      return name === 'braces' && cause.name === 'braces' && cause.url === advisory &&
-        finding.nodes.every(node => lock.packages[node].version === '3.0.3');
+      return exceptions.some(exception => name === exception.name && cause.name === exception.name &&
+        cause.url === exception.url &&
+        finding.nodes.every(node => lock.packages[node].version === exception.version));
     });
   }
 
@@ -52,15 +56,17 @@ function main() {
     throw new Error('npm audit failed without reporting vulnerabilities.');
   }
   if (excepted.length) {
-    console.warn(`Temporary development-only exception: ${advisory}`);
-    console.warn(`Expires ${expires}; affected dependency chain: ${excepted.join(', ')}.`);
+    for (const exception of exceptions.filter(exception => excepted.includes(exception.name))) {
+      console.warn(`Temporary development-only exception: ${exception.url} (${exception.name}@${exception.version}).`);
+    }
+    console.warn(`Expires ${expires}; excepted dependency findings: ${excepted.join(', ')}.`);
   }
   if (blocked.length) {
     console.error(`Blocking vulnerabilities: ${blocked.join(', ')}.`);
     console.error('Run npm audit --prefix blog for details.');
     process.exitCode = 1;
   } else {
-    console.log('Blog dependency audit passed' + (excepted.length ? ' with the exception above.' : ': no vulnerabilities.'));
+    console.log('Blog dependency audit passed' + (excepted.length ? ' with the exceptions above.' : ': no vulnerabilities.'));
   }
 }
 
