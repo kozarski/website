@@ -1,0 +1,26 @@
+{
+  "Gambarino-400": {
+    "family": "Gambarino",
+    "weight": 400,
+    "path": "gambarino-400.73b51a4e355f.woff2",
+    "source": "https://cdn.fontshare.com/wf/ZINX7PW4XMYISLZAZKYY4QHYYHYNPKAV/Z54IGKTR4PBLA5KTYL3IDQZHFQPJJVNZ/6KBHT5NXCZVM6GHTPKGIR6DXZLQAYIFK.woff2",
+    "sha256": "73b51a4e355f266dd9b17b78fe36a5ac66606d2093b03ead2f58b75207c4be70",
+    "bytes": 16744
+  },
+  "Supreme-400": {
+    "family": "Supreme",
+    "weight": 400,
+    "path": "supreme-400.ca2227b51452.woff2",
+    "source": "https://cdn.fontshare.com/wf/UDGUA26XVGIV6IQWMQNGGAL7FQZFY227/E6HQU6YVWTGYX3KW3DF66KAAJ224ZDU6/5ZZU4JM62PS7KOJ7BOKLPL3AEO2G76TS.woff2",
+    "sha256": "ca2227b5145226ca24bb601053e609e96ddaedb59ebc14fa920065bf934a5dd5",
+    "bytes": 18700
+  },
+  "Supreme-500": {
+    "family": "Supreme",
+    "weight": 500,
+    "path": "supreme-500.ce86616b5f35.woff2",
+    "source": "https://cdn.fontshare.com/wf/OTYYUXNCZZI6EV6RSCAQFTGEGQ7JTD6B/45FLQUBI6DWIP6NYFVBTMKS6YPU3VYPT/GHZ524YD2KXKRX4PZ2S7DE3HKNPE2EKH.woff2",
+    "sha256": "ce86616b5f35f7e3a0cded1375b9811e34bf66bdeaa3ffabb5ce6ad7e01c66d2",
+    "bytes": 18828
+  }
+}

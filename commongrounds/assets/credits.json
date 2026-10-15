@@ -1,0 +1,37 @@
+{
+  "playdate.png": {
+    "source": "https://assets.play.date/media/Playdate%20Media%20Kit%204.0.zip",
+    "credit": "Panic / Playdate Media Kit 4.0",
+    "note": "Official photo, unmodified. The webpage overlays our own gameplay on its display."
+  },
+  "gameplay": {
+    "source": "Native Playdate Simulator capture of Common Grounds, version 0.8.3",
+    "speed": "1x game simulation time",
+    "note": "This is a captured showcase, not a browser-playable version of the game."
+  },
+  "regulars": {
+    "source": "art/cast-drawings.lua",
+    "note": "Original authored game routines, rendered at 20 fps for this website.",
+    "generator": "tools/prepare_web_cast.py"
+  },
+  "fonts": {
+    "Gambarino": "Indian Type Foundry / Fontshare. ITF Free Font License.",
+    "Supreme": "Indian Type Foundry / Fontshare. ITF Free Font License."
+  },
+  "playdate-download.svg": {
+    "source": "https://help.play.date/developer/playdate-link-badges/Playdate-badges.zip",
+    "credit": "Panic / official Download for Playdate badge",
+    "note": "Unmodified. Links directly to the sideloadable game ZIP."
+  },
+  "itch-badge.svg": {
+    "source": "https://github.com/itchio/press-kit/archive/v2019.01.02.zip",
+    "credit": "itch.io / official press kit",
+    "guidelines": "https://itch.io/press-kit",
+    "note": "Unmodified, locally hosted badge. An unlinked placeholder until the game has an itch.io listing."
+  },
+  "barista": {
+    "source": "art/after-hours/barista-story.lua",
+    "generator": "tools/prepare_web_barista.py",
+    "note": "Original twelve-second website performance of Colby at his counter. Captured as native 336\u00d7256 Playdate SDK 1-bit frames, shown at 20 fps. Web exports map black to the site background, #101010. Colby also appears in the playable game; this longer counter performance is made for the website."
+  }
+}
