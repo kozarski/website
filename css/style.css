@@ -143,6 +143,7 @@ button {
 
 .navigation {
   display: flex;
+  flex-wrap: wrap;
   gap: 28px;
   margin-bottom: 30px;
   font-size: .8125rem;
@@ -151,9 +152,50 @@ button {
 }
 
 .navigation a {
+  position: relative;
   padding-bottom: 4px;
   color: #65696c;
   text-decoration: none;
+  white-space: nowrap;
+  text-shadow: 0 0 currentColor, 0 0 currentColor;
+  transition: color 240ms ease, text-shadow 240ms ease;
+}
+
+.navigation a::before {
+  content: '';
+  position: absolute;
+  top: -14px;
+  left: calc(50% - 1.25px);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+  transform: translate(-50%, 5px) scale(.25, .6);
+  transition: opacity 200ms ease, transform 360ms cubic-bezier(.22, 1, .36, 1);
+  pointer-events: none;
+}
+
+.navigation a:not([aria-current='page']):not(:active):focus-visible {
+  color: #333;
+  text-shadow: -.2px 0 currentColor, .2px 0 currentColor;
+}
+
+.navigation a:not([aria-current='page']):not(:active):focus-visible::before {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .navigation a:not([aria-current='page']):not(:active):hover {
+    color: #333;
+    text-shadow: -.2px 0 currentColor, .2px 0 currentColor;
+  }
+
+  .navigation a:not([aria-current='page']):not(:active):hover::before {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
 }
 
 .navigation a[aria-current='page'] {
@@ -451,6 +493,21 @@ footer {
   pointer-events: auto;
 }
 
+.website-icon {
+  width: 1em;
+  height: 1em;
+  margin-right: .4em;
+  vertical-align: -.15em;
+}
+
+.project-copy .playdate-link {
+  transition: color 240ms ease;
+}
+
+.project-copy .playdate-link:is(:hover, :focus-visible) {
+  color: #ffc833;
+}
+
 .project-copy .stack {
   margin-top: 12px;
   font-size: .8125rem;
@@ -532,6 +589,10 @@ footer {
   }
 
   .links {
+    gap: 8px 16px;
+  }
+
+  .navigation {
     gap: 8px 16px;
   }
 }

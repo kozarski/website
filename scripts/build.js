@@ -16,6 +16,8 @@ const siteFiles = [
   'images',
   'fonts',
   'projects',
+  'lab',
+  'commongrounds',
   'drawplets',
   'finder',
   'lv426',

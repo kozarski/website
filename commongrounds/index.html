@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101010">
+  <meta name="description" content="great coffee. ok people. no wifi. Common Grounds is a free coffee game for Playdate.">
+  <meta property="og:title" content="Common Grounds">
+  <meta property="og:description" content="great coffee. ok people. no wifi.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://www.coreykozarski.com/commongrounds/assets/social.png">
+  <title>Common Grounds</title>
+  <link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/gambarino-400.73b51a4e355f.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css?v=1a18ffba04d4">
+  <script src="app.js?v=f9261f53c8a3" defer></script>
+  <script src="balloon.js?v=3cdce49d2d91" defer></script>
+</head>
+<body>
+  <a class="skip" href="#regulars">Skip to the regulars</a>
+  <div class="download-dock">
+    <!-- The release asset keeps the same name so this always downloads the latest build. -->
+    <a class="download-badge" href="https://github.com/kozarski/common-grounds/releases/latest/download/CommonGrounds.pdx.zip" aria-label="Download Common Grounds for Playdate, free"><img src="assets/playdate-download.svg" alt="Download for Playdate" width="329" height="98"></a>
+  </div>
+  <main id="main">
+    <section class="poster" aria-labelledby="title">
+      <h1 id="title"><span class="word-common">Common</span><span class="word-grounds">Grounds</span></h1>
+      <p class="tagline"><span>great coffee.</span><span>ok people.</span><span>no wifi.</span></p>
+      <div class="hero-art">
+        <div class="device">
+          <img class="device-photo" src="assets/playdate.png" alt="Common Grounds playing on a yellow Playdate" width="1600" height="1600" fetchpriority="high">
+          <div class="device-screen" aria-hidden="true"><video id="hero-video" muted autoplay loop playsinline preload="auto" poster="assets/v60.png?v=ec90104626ec"><source src="assets/counter-loop.mp4?v=ee4901b9d7ce" type="video/mp4"></video></div>
+        </div>
+      </div>
+    </section>
+    <section id="regulars" class="regulars" aria-labelledby="regulars-title">
+      <div class="regulars-head">
+        <p class="game-note">Crank out coffee.<br>Keep the regulars happy.<br><span>Fill the tip jar.</span></p>
+        <h2 id="regulars-title" class="cafe-sign" aria-label="Meet the regulars">
+          <button id="regulars-toggle" class="sign-toggle" type="button" aria-expanded="true" aria-controls="regulars-content" aria-label="Hide the regulars">
+            <span class="sign-pin" aria-hidden="true"></span>
+            <span class="sign-swing" aria-hidden="true">
+              <span class="sign-flip">
+                <svg class="sign-string" width="300" height="94"><line x1="50%" y1="6" x2="10%" y2="100%"/><line x1="50%" y1="6" x2="90%" y2="100%"/></svg>
+                <span class="sign-board sign-front"><span class="sign-kicker">Meet the</span><span class="sign-title">regulars</span></span>
+                <span class="sign-board sign-back"><span class="sign-title">closed</span></span>
+              </span>
+            </span>
+          </button>
+        </h2>
+      </div>
+      <div class="regulars-fold">
+        <div id="regulars-content" class="regulars-content">
+          <div class="cast-stage">
+            <div class="cast-story" aria-live="polite" aria-atomic="true"><h3 id="cast-name">Lucy</h3></div>
+            <div class="cast-portrait">
+              <img id="cast-image" src="assets/regulars/16.svg?v=e3b3ae4574b7" alt="Lucy" width="208" height="224">
+              <video id="cast-video" muted loop playsinline preload="none" aria-hidden="true"></video>
+            </div>
+          </div>
+          <div id="cast-picker" aria-label="Choose a regular"></div>
+          <noscript><p>Enable JavaScript to meet all twenty regulars.</p></noscript>
+        </div>
+      </div>
+    </section>
+    <section id="barista" class="barista" aria-labelledby="barista-title">
+      <div class="barista-scene">
+        <div class="barista-portrait">
+          <img src="assets/barista.png?v=92cee65bd2a5" alt="Colby making a pour-over at his messy café counter" width="336" height="256" loading="lazy">
+          <video id="barista-video" muted loop playsinline preload="none" aria-hidden="true"><source src="assets/barista.mp4?v=01ec6a660e7f" type="video/mp4"></video>
+        </div>
+        <div class="barista-story">
+          <h2 id="barista-title"><span class="barista-intro">Meet</span><span class="barista-name">Colby.</span></h2>
+          <p>Colby used to come here for a quiet coffee. When the place went under, he bought it to keep his favourite neighbourhood spot alive. Business is good. The regulars stayed, and they all expect their usual made just right. Now he is stuck grinding hard to keep everyone happy and his business afloat. He's only three complaints away from closing early.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="closing-credit">
+    <p>Thanks for stopping by.</p>
+    <a id="creator-link" href="https://www.coreykozarski.com/">A game by Corey Kozarski</a>
+  </footer>
+</body>
+</html>

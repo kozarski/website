@@ -1,0 +1,1026 @@
+{
+  "version": 2,
+  "characters": {
+    "01": {
+      "name": "MAX",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.32,
+      "still_native_frame": 133,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "01.mp4": "c5374c111425b40b4b8b1020f05813c9a04ac101057c53684527d6d86c48035b",
+        "01.svg": "95a582c07f1fececb77d3ae4479fb25095dc3a55fee2b39f9c14c53acbe9751f"
+      }
+    },
+    "02": {
+      "name": "RICHARD",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.29,
+      "still_native_frame": 130,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "02.mp4": "a7893d55a27278b47ab81f1c34eb1ca22cfbcd7e02e5cdd2848b9027ff07455e",
+        "02.svg": "f5d95629e193480616968d240feb514cf3036a005c6fa13afd9825f10eeeed0c"
+      }
+    },
+    "03": {
+      "name": "VANESSA",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.4,
+      "still_native_frame": 143,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "03.mp4": "80feffe07e76b375956a17ffa67968fa10fabb59b1548235a9ed70f27bcb5369",
+        "03.svg": "fc69c2c5ec778ad36a6bc49a86a9ce835023909aa62e6faf5b64fb827eb05531"
+      }
+    },
+    "04": {
+      "name": "ELLIOT",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.4,
+      "still_native_frame": 143,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "04.mp4": "1f0b84a796f2c012329e505c88156f40af072275910756e5ee9fb0d29db7f2ca",
+        "04.svg": "624e2abc4985cb160448636e12afbc9307ef82088e0f07069dc4efcd4343eb6b"
+      }
+    },
+    "05": {
+      "name": "JESS",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.4,
+      "still_native_frame": 143,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "05.mp4": "70720dce9ad7bb4f9d5fa97a8cf3118f45562e55dcd9f4af4e51f4532d9165c1",
+        "05.svg": "1e5732bc5d929c5d2b6e5c83b378351442a5ccf6b55edeeb77db7e7559391b8c"
+      }
+    },
+    "06": {
+      "name": "ROXY",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.4,
+      "still_native_frame": 143,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "06.mp4": "9af7a0ff784be51da607e67c88c392dd7ccc7fe174e053cc170f06ad8c3bea74",
+        "06.svg": "a5958821f306324745d6b082140bf5367c4a098fa993773a3edfc7dd0376d904"
+      }
+    },
+    "07": {
+      "name": "SARAH",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.5,
+      "still_native_frame": 155,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "07.mp4": "e2fa1381ca259c6d975fa036465c907a730a1b1bf069ca567b4f857585e8dab6",
+        "07.svg": "0ce17a54a46a77a801a6805b1e61937d6e8ca19c4960dc8c23802b8908fc78a0"
+      }
+    },
+    "08": {
+      "name": "GUS",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.45,
+      "still_native_frame": 149,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "08.mp4": "af024d5b1d74f658abb62936c8139d21938aae0f2b8d65b18a901572f17e24a0",
+        "08.svg": "21b2dbc81f82b81e18f071706b4ec79b98ca6d43f751644524e9f208343745bd"
+      }
+    },
+    "09": {
+      "name": "BEN",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.28,
+      "still_native_frame": 128,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "09.mp4": "1ce9a650edc81a929ac518cf6c0310b2035ffcdf7e4d9ca500cfbfb8b3ba3a7c",
+        "09.svg": "eddc41d8b716a17f47863c036afb6a1ad39f0c090541cf1e18b05553508374da"
+      }
+    },
+    "10": {
+      "name": "VERONICA",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.43,
+      "still_native_frame": 146,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "10.mp4": "f9572b1651a726ce9f36de3cabb1fec019e770b217066e334f75dd79b5730646",
+        "10.svg": "1ab7a86b8e4dc58b944e341c55136d6267896ea229ddd9789b2fc60b97082edb"
+      }
+    },
+    "11": {
+      "name": "OLIVER",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.36,
+      "still_native_frame": 138,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "11.mp4": "294c4fc101fe1e5dc07409e79cb2c6923ef12490db2373ac4b61d0911b9b219a",
+        "11.svg": "fd25b78942164a0642e28ce2e7a0f40156cb182a4d68923654d009e48fae6f30"
+      }
+    },
+    "12": {
+      "name": "SEBASTIAN",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.42,
+      "still_native_frame": 145,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "12.mp4": "74fe1e175232dd59cdfbda0ed1720ecf81095c1c245d956361d190ab01876817",
+        "12.svg": "4845a4a0f1c8586cd4efa67ed9499ef8c8b0b97eff4863642f929852a424812b"
+      }
+    },
+    "13": {
+      "name": "DOROTHY",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.45,
+      "still_native_frame": 149,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "13.mp4": "d21c9ae4e348c655b9fed99f9b0148da1307fe6da8b446a6b53bdf0d74fae7fb",
+        "13.svg": "926f8ccc9a858556950ca7b1e670677ea0e1143a09b3359542f4fec619c8050e"
+      }
+    },
+    "14": {
+      "name": "JAKE",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.36,
+      "still_native_frame": 138,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "14.mp4": "7b48a9746c4f9c71e006daa1a1efbfc8960bf7e853aee873decb8b806070887f",
+        "14.svg": "1cf9b9d206a8a927474000af73ffc223820c668df08d8df451b8b0585f8dc5fc"
+      }
+    },
+    "15": {
+      "name": "CHLOE",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.18,
+      "still_native_frame": 116,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "15.mp4": "b3e786e62369b923368b069d2d0524371641a71a4191787a038b163e82eba832",
+        "15.svg": "12b156f33f1146e5ec3927b77037a4a3fe6e623db835d5b5a628e6e0eabdd739"
+      }
+    },
+    "16": {
+      "name": "LUCY",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.1,
+      "still_native_frame": 107,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "16.mp4": "c38cbb605cc91363bf110e3dbeceba3f5e72bd4d3bcaad63a40963493c0122dc",
+        "16.svg": "6f56f371daf0a6af421b33d5fd505f93298eda0cf65ad5770473669ea53766cb"
+      }
+    },
+    "17": {
+      "name": "ADAM",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.38,
+      "still_native_frame": 140,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "17.mp4": "b0bf796df5f99ab99345f5e4d036a5b95498858b88d1573e74d729c5dde35ad7",
+        "17.svg": "a139ed93d80747e324298f9139f268cb384e02694c12934bdbc2622ce2ec9b47"
+      }
+    },
+    "18": {
+      "name": "TYLER",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.42,
+      "still_native_frame": 145,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "18.mp4": "d2eff742580aed804f64ddea7859da027adff0418c3bf2a8363191523b5faf1f",
+        "18.svg": "b3514dcc304255fdc40c56c8486acb28020925d7bf76bdee2915fece9629a66e"
+      }
+    },
+    "19": {
+      "name": "MARGE",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.45,
+      "still_native_frame": 149,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "19.mp4": "33ac1e81029d0bdf9db3b0285325c1b1db0b244f93a19ebb79f8dbf5f7e793f5",
+        "19.svg": "3b5cb6b4027ef209ce40658cc6758ac4c2f8e63ef2b859320fe7089802231170"
+      }
+    },
+    "20": {
+      "name": "SONNY",
+      "sources": {
+        "art/cast-drawings.lua": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+        "source/roster.lua": "d607a624e127adca781d216b64a5ce1ae18102cdd7c9bbfdda2d34feff719443",
+        "tools/prepare_web_cast.py": "cbe1dbb79c6e7d2759f85f89a25bb24560154680a6f3a09f650024495e8930a9",
+        "tools/bake_after_hours.py": "6974f04f90b109e2835b44e4884b142808084abd3d69f5dcbac2f61d51325c95",
+        "native/ink.c": "77d45c978519ad1894a3e20f5126c794ec5b9655fefa2dc0f57acb04dae74d17",
+        "art/after-hours/c01.lua": "092e15edcdbb463cccd2c04c58a15290fe777fda22b5d8dbaaa49f60f5eefdc8",
+        "art/after-hours/c02.lua": "40647b9b5ea36fc936b628560a1fbf99d0e9a6aefef6a747036ba2b400a52b2c",
+        "art/after-hours/c03.lua": "bc58ca8ebe2ff97f5815bdd5dca156702c273984c54257da3a81020de93dd699",
+        "art/after-hours/c04.lua": "68b90b634adf3d5a5c01731afe668e89e781185f7677b1b019e7d8a00c8a71d6",
+        "art/after-hours/c05.lua": "b926ba0c2e09265b7192136517e5b7714cf435965c108ab4786fb6ab7c7ba5c9",
+        "art/after-hours/c06.lua": "af14717ab58a7e3926fe44d40eadc6eed82738d5ea5644c980cef4d366c42485",
+        "art/after-hours/c07.lua": "186f43bac9fd36b018d2d36f7d38dde2f9e7850d05ce90ede064431f2ba12799",
+        "art/after-hours/c08.lua": "4d72e1d06b0a8ec7144c5b78701631a16891da39f52ad8b5f24b2b603efe1604",
+        "art/after-hours/c09.lua": "1d1b57ef834947f0900f5acd742ba89018ea1097a27dd9dfd8ed12d7d8926bcb",
+        "art/after-hours/c10.lua": "97cb8f3ad601a26cbc71a28e95df220890e0431620a1955fccabd52663ed89d1",
+        "art/after-hours/c11.lua": "ea77731c8797bb03f3af83ed7a171f2afb7da86a36c07412a8b2289ba9224579",
+        "art/after-hours/c12.lua": "16cbda2dcc158fa021f11a6d2d40fc1a38df9ec8cd20d525a6a0bc3933490399",
+        "art/after-hours/c13.lua": "2e38cc5be8bd4f1460bdc6367a427e00212116cf08d7475618c95c0b516ab5d1",
+        "art/after-hours/c14.lua": "c3e5344bfae8ec2a6cb90ada998fd4bd33d64f6762bf09563cb8f557061e2a9f",
+        "art/after-hours/c15.lua": "1c86f438f0707585c31f55ac1cd82a86aad41efb294eadd22e854ae35b67f86f",
+        "art/after-hours/c16.lua": "b762cbfcb708d91c74744d0f42366dc5631895867b7ad24378cb3aa2bbfbeca7",
+        "art/after-hours/c17.lua": "35350450d5e4a59a015e69a1f3f5373deeaba994d8fe7c5c0683e5cc876cf871",
+        "art/after-hours/c18.lua": "71ca67dbba3d6405b9bc3fbac11811025eb0ca4645a0bb3699b8692128cd3930",
+        "art/after-hours/c19.lua": "169cd9ff7405a5c0322ce948c4878f6b91008be1d24190a355bbd5f9f608c8a3",
+        "art/after-hours/c20.lua": "b50ce759f24bb9487ed2cab7a1d59c37ed80e05fa7fc1c1ae1593c929de6076d",
+        "source/ink.lua": "8ad6d8491495110ed0ab63b6df12da2402bf6708b62dbd47198f4cf6cb7008d5",
+        "tools/native_build.py": "d5b48674dab81f67678cdaf9c1ac7b4ae0cf96a07a857ba721f20e14227650c8"
+      },
+      "renderer": "Native Playdate SDK 1-bit framebuffer",
+      "still_phase": 0.45,
+      "still_native_frame": 149,
+      "video": {
+        "fps": 20,
+        "frames": 120,
+        "dimensions": [
+          416,
+          448
+        ],
+        "native_dimensions": [
+          208,
+          224
+        ]
+      },
+      "files": {
+        "20.mp4": "c654a2a4868cc89d385d1795a24bdf3484f482d53325247882fd47c635f4246a",
+        "20.svg": "7e4faf276b1c2f50624dfd367e02b5854a2f34c4f5e6e5cb46d093a7681e8bde"
+      }
+    }
+  },
+  "all_current": true
+}

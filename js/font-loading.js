@@ -3,6 +3,7 @@
   const fontsByPage = {
     '/': [['Zodiak', '/fonts/zodiak-variable.fbc0b605217b.woff2']],
     '/projects/': [['Tanker', '/fonts/tanker-regular.98d0d534c2b6.woff2']],
+    '/lab/': [['Tanker', '/fonts/tanker-regular.98d0d534c2b6.woff2']],
     '/sandwich/': [['Comico', '/sandwich/fonts/comico-regular.ff3e3214ef73.woff2']],
     '/pride/': [['Aktura', '/fonts/aktura-regular.537e4b41ea19.woff2']],
     '/pixel/': [
@@ -47,7 +48,7 @@
 
   function warmNextPage() {
     if (currentPage !== '/') return;
-    // Only the likely next page is warmed automatically: Tanker is about 19 KB.
+    // Only warm the likely next page automatically.
     if ('requestIdleCallback' in window) {
       requestIdleCallback(() => warmFonts('/projects/'));
     } else {

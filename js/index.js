@@ -103,7 +103,7 @@ if (projects) {
     more.type = 'button';
     more.className = 'projects-more';
     more.setAttribute('aria-controls', 'more-projects');
-    more.textContent = `More projects (${extraRows.length})`;
+    more.textContent = `${projects.dataset.moreLabel || 'More projects'} (${extraRows.length})`;
     extra.id = 'more-projects';
     extraRows.forEach(row => extra.append(row));
     // The control disappears on expansion, leaving the rows in one continuous list.

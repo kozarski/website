@@ -1,0 +1,43 @@
+{
+  "version": "0.8.3",
+  "drawing_sha256": "202162be6eef7f7316303523a9fd707115321847936769cfb5ed0c00e0ce4ae7",
+  "capture_manifest_sha256": "dba5dc62f719880d1eeaad556c10de22ff5a5315709f8d815aed038202ae5111",
+  "source_film_sha256": "43b4aee7685d97d3d8e482be653e61be82c1af07b26ee22329bea6271c752eb2",
+  "generator_sha256": "9fa9c0973438cae016faa2b0be5bbfb1916c08a992a2eeca99a07fe3bdd02ce5",
+  "clips": [
+    {
+      "name": "v60",
+      "start": 10.719999999999999,
+      "duration": 4.0
+    },
+    {
+      "name": "espresso",
+      "start": 30.12,
+      "duration": 5.5
+    },
+    {
+      "name": "cocoa",
+      "start": 46.91,
+      "duration": 4.5
+    }
+  ],
+  "files": {
+    "v60.mp4": "dac0ed700fab8d6b6b69a10db5136d31be03e910acc40e57a42eeb5b84e71951",
+    "v60.gif": "7b49892f6cf8e48c04fb2b7f92b217a4dbc61f5b035d955b284eef156b5e8a24",
+    "v60.png": "ec90104626ec1409e77d576a93738613197412fabb9c07b6c07567063eab56bc",
+    "espresso.mp4": "f96dcddcfa612933151d1512cf076f9509ca809dd5de2fa957be9d60b432a926",
+    "espresso.gif": "77b669c8c4e1c6716cb7c993bdeaf2833d97fbfa1d0b276c4d040645d3c001a3",
+    "espresso.png": "a9a6d94479f5baa91937f8fe93eba4f6be986edddb8c10b2be69e3f442f84a40",
+    "cocoa.mp4": "6688b50115d83091aceed04b7e244ea33ca5884a4296cddfbb55dca8ab17738f",
+    "cocoa.gif": "3d308972880aded338bcbc28387cd564947918848a374669dc92bb19edc7a28f",
+    "cocoa.png": "588c54d3c7838a896183a401b294c74c52e95eb46529b3f711ec96f2adadf162",
+    "counter-loop.mp4": "ee4901b9d7ce091eeeed8461bf59b480fd04858c0e7e9f08b9c060a99b82b6c4"
+  },
+  "press_screenshots": {
+    "01-title.png": "d2cf3c49b743743dace62ce4c1147aea1c9e6d950ab32f223d2610a9ba683406",
+    "02-pour-over.png": "ec90104626ec1409e77d576a93738613197412fabb9c07b6c07567063eab56bc",
+    "03-espresso.png": "a9a6d94479f5baa91937f8fe93eba4f6be986edddb8c10b2be69e3f442f84a40",
+    "04-hot-chocolate.png": "588c54d3c7838a896183a401b294c74c52e95eb46529b3f711ec96f2adadf162",
+    "05-hex.png": "45b867eacaeb75de3235dc1b416fb0cf612a69c84163d562188ad1467c73e491"
+  }
+}
