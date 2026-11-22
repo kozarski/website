@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { CATALOG } from './catalog.mjs';
 import { MarchingCubes } from 'three/addons/objects/MarchingCubes.js';
-import { sampleSheet } from './physics.mjs';
+import { bindSheet, skinSheet } from './physics.mjs';
 import { addFocaccia } from './focaccia.mjs';
 import { addBatteredFood } from './battered.mjs';
 import { addHashBrown } from './hash-brown.mjs';
@@ -1128,8 +1128,50 @@ export function createIngredient(id) {
   return group;
 }
 
-const surfacePoint = new THREE.Vector3();
-const restVertex = [0, 0, 0];
+// BufferGeometry.computeVertexNormals, to the last bit, without three vector
+// objects and a dozen accessor calls for every triangle of every moving slice.
+function updateNormals(geometry) {
+  const { position, normal } = geometry.attributes;
+  if (!geometry.index || !normal) return geometry.computeVertexNormals();
+  const p = position.array,
+    n = normal.array,
+    index = geometry.index.array;
+  n.fill(0);
+  for (let i = 0; i < index.length; i += 3) {
+    const a = index[i] * 3,
+      b = index[i + 1] * 3,
+      c = index[i + 2] * 3;
+    const cx = p[c] - p[b],
+      cy = p[c + 1] - p[b + 1],
+      cz = p[c + 2] - p[b + 2];
+    const ax = p[a] - p[b],
+      ay = p[a + 1] - p[b + 1],
+      az = p[a + 2] - p[b + 2];
+    const x = cy * az - cz * ay,
+      y = cz * ax - cx * az,
+      z = cx * ay - cy * ax;
+    n[a] += x;
+    n[a + 1] += y;
+    n[a + 2] += z;
+    n[b] += x;
+    n[b + 1] += y;
+    n[b + 2] += z;
+    n[c] += x;
+    n[c + 1] += y;
+    n[c + 2] += z;
+  }
+  for (let i = 0; i < n.length; i += 3) {
+    const x = n[i],
+      y = n[i + 1],
+      z = n[i + 2];
+    const scale = 1 / (Math.sqrt(x * x + y * y + z * z) || 1);
+    n[i] = x * scale;
+    n[i + 1] = y * scale;
+    n[i + 2] = z * scale;
+  }
+  normal.needsUpdate = true;
+}
+
 export function animateIngredient(
   group,
   item,
@@ -1157,27 +1199,22 @@ export function animateIngredient(
     item.surfaceLift = 0;
     const { base, logical, mesh } = surface,
       positions = mesh.geometry.attributes.position;
-    for (let i = 0; i < positions.count; i++) {
-      restVertex[0] = base[i * 3];
-      restVertex[1] = base[i * 3 + 1];
-      restVertex[2] = base[i * 3 + 2];
-      if (item.parts && !held)
-        sampleSheet(
-          item,
-          logical[i * 2],
-          logical[i * 2 + 1],
-          restVertex,
-          surfacePoint,
-        );
-      else {
+    if (item.parts && !held) {
+      if (surface.skin?.item !== item)
+        surface.skin = bindSheet(item, base, logical);
+      skinSheet(surface.skin, positions.array);
+    } else
+      for (let i = 0; i < positions.count; i++) {
         const edge = Math.hypot(logical[i * 2], logical[i * 2 + 1]);
-        surfacePoint.set(...restVertex);
-        if (!reduceMotion) surfacePoint.y -= edge * edge * 0.045 * spec.bend;
+        positions.setXYZ(
+          i,
+          base[i * 3],
+          base[i * 3 + 1] - (reduceMotion ? 0 : edge * edge * 0.045 * spec.bend),
+          base[i * 3 + 2],
+        );
       }
-      positions.setXYZ(i, surfacePoint.x, surfacePoint.y, surfacePoint.z);
-    }
     positions.needsUpdate = true;
-    mesh.geometry.computeVertexNormals();
+    updateNormals(mesh.geometry);
     mesh.geometry.computeBoundingSphere();
   } else if (group.userData.fluid) {
     if (item.parts && !held) updateFluid(group, spec, item);

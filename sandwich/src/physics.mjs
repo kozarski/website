@@ -2,7 +2,12 @@ import * as CANNON from 'cannon-es';
 import { Vector3 } from 'three';
 import { CATALOG } from './catalog.mjs';
 import { createBatteredGeometry } from './battered.mjs';
-import { collisionEnvelope, liftSheetContact } from './collision-surfaces.mjs';
+import {
+  collisionEnvelope,
+  liftSheetContact,
+  liftSheetContacts,
+} from './collision-surfaces.mjs';
+import { project } from './projection.mjs';
 import {
   sheetPoint,
   fluidPoints,
@@ -11,7 +16,30 @@ import {
   avocadoSlices,
 } from './shapes.mjs';
 
+CANNON.ConvexPolyhedron.project = project;
+
 const STEP = 1 / 120;
+// Cannon abandons its catch-up loop after one step's worth of real time, so a
+// busy stack that needs 9 ms per step plays at a fraction of its real speed.
+// Hold real time for as long as that still leaves a usable frame rate.
+const STEP_BUDGET = 30;
+// A resting stack is never perfectly still: its joints and contacts leave every
+// part trembling by a fraction of a pixel, faster than Cannon's sleep limits
+// allow, so a stack of slices used to be simulated forever. Rest is judged by
+// where the parts are instead. A portion none of whose parts has strayed this
+// far for this long sleeps as one piece. See updateSleep.
+const REST_DISTANCE = 0.03,
+  REST_TIME = 0.5;
+// A part wedged against a sleeping neighbour can be shaken further than that
+// for as long as it stays awake. Whatever has still gone nowhere after a few
+// seconds is put to rest as well.
+const IDLE_DISTANCE = 0.1,
+  IDLE_TIME = 4;
+// A portion is travelling while it keeps straying this quickly, and its blow
+// wakes this many times its own weight in resting food.
+const TRAVEL_TIME = 0.1,
+  BLOW = 4;
+const { SLEEPING } = CANNON.Body;
 const normal = new CANNON.Vec3(),
   local = new CANNON.Vec3(),
   point = new CANNON.Vec3();
@@ -45,12 +73,125 @@ class FoodBroadphase extends CANNON.SAPBroadphase {
   }
 }
 
+// Values kept per equation: the four Jacobian vectors, each body's inverse
+// inertia applied to its rotational one, both inverse masses, then B, 1 / C,
+// eps, the force limits and the accumulated lambda.
+const ROW = 26;
+
 class FoodSolver extends CANNON.GSSolver {
+  rows = new Float64Array(0);
+  slots = new Int32Array(0);
+  corrections = new Float64Array(0);
+
   addEquation(equation) {
     // Skip sleeping joints until either body wakes.
     if (equation.bi.sleepState === CANNON.Body.SLEEPING &&
         equation.bj.sleepState === CANNON.Body.SLEEPING) return;
     super.addEquation(equation);
+  }
+
+  // Cannon's own Gauss-Seidel loop, with the equations copied into flat arrays
+  // first. It visits the same equations in the same order with the same
+  // arithmetic, so the outcome is identical; it only stops every iteration
+  // from chasing a dozen objects per equation. With a few thousand joints and
+  // contacts in a stack of slices, that loop is most of a physics step.
+  solve(dt, world) {
+    const { equations } = this,
+      { bodies } = world,
+      count = equations.length;
+    if (!count) return 0;
+    if (this.rows.length < count * ROW) {
+      this.rows = new Float64Array(count * ROW * 2);
+      this.slots = new Int32Array(count * 4);
+    }
+    if (this.corrections.length < bodies.length * 6)
+      this.corrections = new Float64Array(bodies.length * 12);
+    const { rows, slots, corrections } = this;
+    for (const body of bodies) body.updateSolveMassProperties();
+    for (let i = 0, o = 0; i < count; i++, o += ROW) {
+      const equation = equations[i],
+        { bi, bj } = equation;
+      rows[o + 20] = equation.computeB(dt);
+      rows[o + 21] = 1 / equation.computeC();
+      rows[o + 22] = equation.eps;
+      rows[o + 23] = equation.minForce;
+      rows[o + 24] = equation.maxForce;
+      rows[o + 25] = 0;
+      const { spatial: sa, rotational: ra } = equation.jacobianElementA,
+        { spatial: sb, rotational: rb } = equation.jacobianElementB;
+      rows[o] = sa.x;
+      rows[o + 1] = sa.y;
+      rows[o + 2] = sa.z;
+      rows[o + 3] = ra.x;
+      rows[o + 4] = ra.y;
+      rows[o + 5] = ra.z;
+      rows[o + 6] = sb.x;
+      rows[o + 7] = sb.y;
+      rows[o + 8] = sb.z;
+      rows[o + 9] = rb.x;
+      rows[o + 10] = rb.y;
+      rows[o + 11] = rb.z;
+      let e = bi.invInertiaWorldSolve.elements;
+      rows[o + 12] = e[0] * ra.x + e[1] * ra.y + e[2] * ra.z;
+      rows[o + 13] = e[3] * ra.x + e[4] * ra.y + e[5] * ra.z;
+      rows[o + 14] = e[6] * ra.x + e[7] * ra.y + e[8] * ra.z;
+      e = bj.invInertiaWorldSolve.elements;
+      rows[o + 15] = e[0] * rb.x + e[1] * rb.y + e[2] * rb.z;
+      rows[o + 16] = e[3] * rb.x + e[4] * rb.y + e[5] * rb.z;
+      rows[o + 17] = e[6] * rb.x + e[7] * rb.y + e[8] * rb.z;
+      rows[o + 18] = bi.invMassSolve;
+      rows[o + 19] = bj.invMassSolve;
+      slots[i * 2] = bi.index * 6;
+      slots[i * 2 + 1] = bj.index * 6;
+    }
+    const v = corrections.fill(0, 0, bodies.length * 6);
+    const tolerance = this.tolerance * this.tolerance;
+    let iteration = 0;
+    for (; iteration !== this.iterations; iteration++) {
+      let total = 0;
+      for (let i = 0, o = 0; i < count; i++, o += ROW) {
+        const a = slots[i * 2],
+          b = slots[i * 2 + 1],
+          lambda = rows[o + 25];
+        const speed =
+          v[a] * rows[o] + v[a + 1] * rows[o + 1] + v[a + 2] * rows[o + 2] +
+          (v[a + 3] * rows[o + 3] + v[a + 4] * rows[o + 4] + v[a + 5] * rows[o + 5]) +
+          (v[b] * rows[o + 6] + v[b + 1] * rows[o + 7] + v[b + 2] * rows[o + 8] +
+            (v[b + 3] * rows[o + 9] + v[b + 4] * rows[o + 10] + v[b + 5] * rows[o + 11]));
+        let change = rows[o + 21] * (rows[o + 20] - speed - rows[o + 22] * lambda);
+        if (lambda + change < rows[o + 23]) change = rows[o + 23] - lambda;
+        else if (lambda + change > rows[o + 24]) change = rows[o + 24] - lambda;
+        rows[o + 25] = lambda + change;
+        total += change > 0 ? change : -change;
+        const pushA = rows[o + 18] * change,
+          pushB = rows[o + 19] * change;
+        v[a] += pushA * rows[o];
+        v[a + 1] += pushA * rows[o + 1];
+        v[a + 2] += pushA * rows[o + 2];
+        v[b] += pushB * rows[o + 6];
+        v[b + 1] += pushB * rows[o + 7];
+        v[b + 2] += pushB * rows[o + 8];
+        v[a + 3] += change * rows[o + 12];
+        v[a + 4] += change * rows[o + 13];
+        v[a + 5] += change * rows[o + 14];
+        v[b + 3] += change * rows[o + 15];
+        v[b + 4] += change * rows[o + 16];
+        v[b + 5] += change * rows[o + 17];
+      }
+      if (total * total < tolerance) break;
+    }
+    for (let i = 0, o = 0; i < bodies.length; i++, o += 6) {
+      const { velocity, angularVelocity, linearFactor, angularFactor } = bodies[i];
+      velocity.x += linearFactor.x * v[o];
+      velocity.y += linearFactor.y * v[o + 1];
+      velocity.z += linearFactor.z * v[o + 2];
+      angularVelocity.x += angularFactor.x * v[o + 3];
+      angularVelocity.y += angularFactor.y * v[o + 4];
+      angularVelocity.z += angularFactor.z * v[o + 5];
+    }
+    for (let i = 0; i < count; i++)
+      equations[i].multiplier = rows[i * ROW + 25] * (1 / dt);
+    return iteration;
   }
 }
 
@@ -65,6 +206,38 @@ function roundedShape(spec) {
     geometry.dispose();
   }
   return new CANNON.ConvexPolyhedron(friedEnvelopes.get(spec.id));
+}
+
+// Each part remembers where it was when its portion last strayed (home, turn)
+// and last drifted (anchor).
+function strayed({ body, home, turn }) {
+  if (body.position.distanceSquared(home) > REST_DISTANCE ** 2) return true;
+  const q = body.quaternion;
+  const aligned = Math.abs(q.x * turn.x + q.y * turn.y + q.z * turn.z + q.w * turn.w);
+  // A small turn of angle a leaves the quaternions 1 - a * a / 8 aligned;
+  // compare the distance swept by the rim instead of the angle itself.
+  return 8 * (1 - aligned) * body.boundingRadius ** 2 > REST_DISTANCE ** 2;
+}
+
+function rehome({ body, home, turn }) {
+  home.copy(body.position);
+  turn.copy(body.quaternion);
+}
+
+function drifted({ body, anchor }) {
+  return body.position.distanceSquared(anchor) > IDLE_DISTANCE ** 2;
+}
+
+function reanchor({ body, anchor }) {
+  anchor.copy(body.position);
+}
+
+function touching(a, b, margin = 0.05) {
+  return ['x', 'y', 'z'].every(
+    (axis) =>
+      a.lowerBound[axis] - margin < b.upperBound[axis] &&
+      b.lowerBound[axis] - margin < a.upperBound[axis],
+  );
 }
 
 export class SandwichPhysics {
@@ -94,7 +267,10 @@ export class SandwichPhysics {
     this.sequence = 0;
     this.onImpact = onImpact;
     this.world.addEventListener('preStep', () => this.beforeStep());
-    this.world.addEventListener('postStep', () => this.updateFrames());
+    this.world.addEventListener('postStep', () => {
+      this.updateSleep();
+      this.updateFrames();
+    });
   }
 
   add(id, x = 0, z = 0, y = null, options = {}) {
@@ -128,7 +304,11 @@ export class SandwichPhysics {
       lastImpact: -10,
       impact: 0,
       landed: false,
+      rest: 0,
       quiet: 0,
+      idle: 0,
+      blow: 0,
+      struck: 0,
       stream: !!options.stream,
       supportItems: this.items.slice(),
       bounds: new CANNON.AABB(),
@@ -150,12 +330,13 @@ export class SandwichPhysics {
         position,
         linearDamping: 0.26,
         angularDamping: 0.55,
-        sleepSpeedLimit: 0.09,
-        sleepTimeLimit: 1.1,
+        // Rest is decided for a whole portion at a time. See updateSleep.
+        allowSleep: false,
         ...extra,
       });
       body.quaternion.copy(orientation);
       body.foodOwner = item.uid;
+      body.item = item;
       body.addEventListener('collide', (event) => {
         if (event.body.foodOwner === item.uid) return;
         item.landed = true;
@@ -166,7 +347,13 @@ export class SandwichPhysics {
         this.onImpact(item, strength);
       });
       this.world.addBody(body);
-      item.parts.push({ body, rest: new CANNON.Vec3(...rest) });
+      item.parts.push({
+        body,
+        rest: new CANNON.Vec3(...rest),
+        home: position.clone(),
+        turn: orientation.clone(),
+        anchor: position.clone(),
+      });
       return body;
     };
     if (spec.mode === 'fluid') {
@@ -237,7 +424,6 @@ export class SandwichPhysics {
             linearDamping: 0.35 + spec.viscosity * 0.6,
             angularDamping: 0.95,
             angularFactor: new CANNON.Vec3(0, 0, 0),
-            sleepSpeedLimit: 0.055,
           },
         );
     } else if (spec.mode === 'cluster') {
@@ -373,6 +559,7 @@ export class SandwichPhysics {
     body.addShape(new CANNON.ConvexPolyhedron(collisionEnvelope(points)));
     body.updateMassProperties();
     body.aabbNeedsUpdate = true;
+    item.still = false;
     this.updateFrames();
   }
 
@@ -396,10 +583,10 @@ export class SandwichPhysics {
       linearDamping: 0.35 + spec.viscosity * 0.6,
       angularDamping: 0.95,
       angularFactor: new CANNON.Vec3(0, 0, 0),
-      sleepSpeedLimit: 0.055,
-      sleepTimeLimit: 1.1,
+      allowSleep: false,
     });
     body.foodOwner = item.uid;
+    body.item = item;
     body.isSauce = true;
     body.sauceStableTime = 0;
     body.addEventListener('collide', (event) => {
@@ -411,9 +598,14 @@ export class SandwichPhysics {
       this.onImpact(item, 0.2);
     });
     this.world.addBody(body);
-    item.parts.push({ body, rest: new CANNON.Vec3() });
-    item.quiet = 0;
-    item.body.sleepState = 0;
+    item.parts.push({
+      body,
+      rest: new CANNON.Vec3(),
+      home: body.position.clone(),
+      turn: body.quaternion.clone(),
+      anchor: body.position.clone(),
+    });
+    this.wake(item);
     this.updateFrames();
     return body;
   }
@@ -476,15 +668,91 @@ export class SandwichPhysics {
       }
   }
 
+  // After every step: portions that have stopped moving fall asleep whole, and
+  // sleeping ones wake when something heavy enough arrives.
+  updateSleep() {
+    for (const { bi, bj } of this.world.contacts) {
+      const a = bi.item,
+        b = bj.item;
+      if (!a || !b || a === b) continue;
+      this.disturb(a, bi, b, bj);
+      this.disturb(b, bj, a, bi);
+    }
+    for (const item of this.items) {
+      const { parts } = item;
+      if (item.still) {
+        // A resting portion gives way to a blow of at least its own weight,
+        // and passes on what is left of it.
+        if (item.struck >= item.spec.mass || item.afloat) {
+          this.wake(item);
+          item.blow = Math.max(0, item.struck - item.spec.mass);
+        }
+      } else {
+        if (parts.some(strayed)) {
+          if (item.rest < TRAVEL_TIME) item.blow = item.spec.mass * BLOW;
+          item.rest = 0;
+          parts.forEach(rehome);
+        } else if ((item.rest += STEP) >= TRAVEL_TIME) item.blow = 0;
+        // Sauce on a slope never quite stops oozing, so once it is slow it
+        // counts as settled too.
+        const oozing =
+          item.spec.mode === 'fluid' &&
+          item.age > 2 &&
+          parts.every(({ body }) => body.velocity.length() < 0.16);
+        item.quiet = oozing ? item.quiet + STEP : 0;
+        if (parts.some(drifted)) {
+          item.idle = 0;
+          parts.forEach(reanchor);
+        } else item.idle += STEP;
+        if (
+          item.landed &&
+          !item.afloat &&
+          (item.rest >= REST_TIME || item.quiet > 1.25 || item.idle >= IDLE_TIME)
+        )
+          for (const { body } of parts) body.sleep();
+      }
+      item.struck = 0;
+      item.afloat = false;
+    }
+  }
+
+  // What a portion feels from something it touches, as of the last step.
+  // Acting on it only now lets a blow land on a fixed support: a body woken
+  // mid-step has no contacts with the sleeping bodies under it, and would be
+  // driven straight through them.
+  disturb(item, body, other, otherBody) {
+    const sauce = item.spec.mode === 'fluid',
+      onSauce = other.spec.mode === 'fluid' && !sauce;
+    // A traveller's blow carries on through the stack until it has met
+    // several times its own weight in food. A drizzle only stirs other sauce.
+    if (other.blow > item.struck && (sauce || other.spec.mode !== 'fluid'))
+      item.struck = other.blow;
+    // Sauce cannot settle while squeezed under a fixed lid.
+    if (onSauce && !other.still && body.position.y > otherBody.position.y)
+      item.afloat = true;
+  }
+
+  wake(item) {
+    item.rest = item.idle = 0;
+    item.still = false;
+    item.body.wakeUp();
+    item.body.sleepState = CANNON.Body.AWAKE;
+    item.parts.forEach(rehome);
+    item.parts.forEach(reanchor);
+  }
+
   updateFrames() {
     for (const item of this.items) {
-      if (!item.parts.length) {
+      const { parts } = item;
+      if (!parts.length) {
         item.minY = item.maxY = item.body.position.y;
         continue;
       }
-      item.minY = Infinity;
-      item.maxY = -Infinity;
-      if (item.parts.length === 1 && !item.stream) {
+      const awake = parts.some(({ body }) => body.sleepState !== SLEEPING);
+      // Nothing has changed since this portion fell asleep.
+      if (!awake && item.still) continue;
+      item.still = !awake;
+      if (parts.length === 1 && !item.stream) {
         if (item.body.aabbNeedsUpdate) item.body.updateAABB();
         item.bounds.copy(item.body.aabb);
         item.minY = item.body.aabb.lowerBound.y;
@@ -492,39 +760,23 @@ export class SandwichPhysics {
         continue;
       }
       const frame = item.body;
+      item.minY = Infinity;
+      item.maxY = -Infinity;
       item.bounds.lowerBound.set(Infinity, Infinity, Infinity);
       item.bounds.upperBound.set(-Infinity, -Infinity, -Infinity);
       frame.position.setZero();
       frame.velocity.setZero();
-      let asleep = true;
-      for (const { body } of item.parts) {
+      for (const { body } of parts) {
         frame.position.vadd(body.position, frame.position);
         frame.velocity.vadd(body.velocity, frame.velocity);
         if (body.aabbNeedsUpdate) body.updateAABB();
         item.bounds.extend(body.aabb);
         item.minY = Math.min(item.minY, body.aabb.lowerBound.y);
         item.maxY = Math.max(item.maxY, body.aabb.upperBound.y);
-        if (body.sleepState !== 2) asleep = false;
       }
-      frame.position.scale(1 / item.parts.length, frame.position);
-      frame.velocity.scale(1 / item.parts.length, frame.velocity);
-      frame.sleepState = asleep ? 2 : 0;
-      // Constraint and viscosity forces can leave tiny residual motion forever.
-      // Sleep a settled group together; new collisions still wake its parts.
-      const speedLimit = item.spec.mode === 'fluid' ? 0.16 : 0.04;
-      const settled =
-        item.landed &&
-        item.age > 2 &&
-        item.parts.every(
-          ({ body }) =>
-            body.velocity.length() < speedLimit &&
-            (item.spec.mode === 'fluid' || body.angularVelocity.length() < 0.7),
-        );
-      item.quiet = settled ? item.quiet + STEP : 0;
-      if (item.quiet > 1.25 && !asleep) {
-        for (const { body } of item.parts) body.sleep();
-        frame.sleepState = 2;
-      }
+      frame.position.scale(1 / parts.length, frame.position);
+      frame.velocity.scale(1 / parts.length, frame.velocity);
+      frame.sleepState = awake ? 0 : SLEEPING;
     }
   }
 
@@ -590,8 +842,6 @@ export class SandwichPhysics {
   step(dt) {
     const elapsed = Math.min(Math.max(dt, 0), 0.05);
     if (!this.world.bodies.some((body) => body.mass > 0 && body.sleepState !== CANNON.Body.SLEEPING)) {
-      // Cannon can put the last tile to sleep after its postStep callback.
-      if (this.items.some((item) => item.body.sleepState !== CANNON.Body.SLEEPING)) this.updateFrames();
       // Finish impact animations without solving an entirely stationary world.
       for (const item of this.items) {
         item.age += elapsed;
@@ -601,7 +851,18 @@ export class SandwichPhysics {
       this.world.accumulator = 0;
       return;
     }
-    this.world.step(STEP, elapsed, 8);
+    const world = this.world,
+      started = performance.now();
+    world.accumulator += elapsed;
+    while (world.accumulator >= STEP) {
+      world.step(STEP);
+      world.accumulator -= STEP;
+      if (performance.now() - started > STEP_BUDGET) {
+        // Too slow to keep up: drop the backlog instead of spiralling.
+        world.accumulator %= STEP;
+        break;
+      }
+    }
   }
   removeLast() {
     const item = this.items.pop();
@@ -610,7 +871,10 @@ export class SandwichPhysics {
       this.world.removeContactMaterial(item.contactMaterial);
     for (const c of item.constraints) this.world.removeConstraint(c);
     for (const { body } of item.parts) this.world.removeBody(body);
-    for (const remaining of this.items) remaining.body.wakeUp();
+    // Only what the portion touched can have been leaning on it.
+    for (const remaining of this.items)
+      if (remaining.parts.length && touching(item.bounds, remaining.bounds))
+        this.wake(remaining);
     return item;
   }
   reset() {
@@ -661,4 +925,111 @@ export function sampleSheet(item, u, v, rest, out) {
   out.y += skinNormal.y * skinOffset;
   out.z += skinNormal.z * skinOffset;
   return out;
+}
+
+// sampleSheet for a whole mesh. Everything that depends only on the rest shape
+// is worked out once: the top and bottom skins share each mid-surface sample,
+// and each sample keeps its four tiles, their weights and its offsets to them.
+export function bindSheet(item, base, logical) {
+  const { nx, nz } = item.grid;
+  const vertices = logical.length / 2;
+  const sample = new Uint32Array(vertices),
+    offset = new Float64Array(vertices);
+  const samples = new Map(),
+    tile = [],
+    weight = [],
+    reach = [];
+  for (let i = 0; i < vertices; i++) {
+    const u = logical[i * 2],
+      v = logical[i * 2 + 1];
+    offset[i] = base[i * 3 + 1] - sheetPoint(item.spec, u, v)[1];
+    const key = `${u},${v}`;
+    if (!samples.has(key)) {
+      samples.set(key, samples.size);
+      const gx = Math.max(0, Math.min(nx - 1, (u + 1) * 0.5 * nx - 0.5));
+      const gz = Math.max(0, Math.min(nz - 1, (v + 1) * 0.5 * nz - 0.5));
+      const ix = Math.min(nx - 2, Math.floor(gx)),
+        iz = Math.min(nz - 2, Math.floor(gz));
+      const tx = gx - ix,
+        tz = gz - iz;
+      for (const [dx, dz, w] of [
+        [0, 0, (1 - tx) * (1 - tz)],
+        [1, 0, tx * (1 - tz)],
+        [0, 1, (1 - tx) * tz],
+        [1, 1, tx * tz],
+      ]) {
+        const index = (iz + dz) * nx + ix + dx,
+          part = item.parts[index];
+        tile.push(index);
+        weight.push(w);
+        reach.push(base[i * 3] - part.rest.x, base[i * 3 + 2] - part.rest.z);
+      }
+    }
+    sample[i] = samples.get(key);
+  }
+  return {
+    item,
+    sample,
+    offset,
+    tile: Uint16Array.from(tile),
+    weight: Float64Array.from(weight),
+    reach: Float64Array.from(reach),
+    frames: new Float64Array(item.parts.length * 12),
+    points: new Float64Array(samples.size * 3),
+    normals: new Float64Array(samples.size * 3),
+  };
+}
+
+const axes = [CANNON.Vec3.UNIT_X, CANNON.Vec3.UNIT_Y, CANNON.Vec3.UNIT_Z];
+export function skinSheet(skin, positions) {
+  const { item, sample, offset, tile, weight, reach, frames, points, normals } = skin;
+  for (let k = 0; k < item.parts.length; k++) {
+    const { position, quaternion } = item.parts[k].body;
+    for (let a = 0; a < 3; a++) {
+      quaternion.vmult(axes[a], tileNormal);
+      frames[k * 12 + a * 3] = tileNormal.x;
+      frames[k * 12 + a * 3 + 1] = tileNormal.y;
+      frames[k * 12 + a * 3 + 2] = tileNormal.z;
+    }
+    frames[k * 12 + 9] = position.x;
+    frames[k * 12 + 10] = position.y;
+    frames[k * 12 + 11] = position.z;
+  }
+  for (let s = 0; s < points.length; s += 3) {
+    let x = 0,
+      y = 0,
+      z = 0,
+      nx = 0,
+      ny = 0,
+      nz = 0;
+    for (let c = (s / 3) * 4; c < (s / 3) * 4 + 4; c++) {
+      const f = tile[c] * 12,
+        w = weight[c],
+        ox = reach[c * 2],
+        oz = reach[c * 2 + 1];
+      x += (frames[f] * ox + frames[f + 6] * oz + frames[f + 9]) * w;
+      y += (frames[f + 1] * ox + frames[f + 7] * oz + frames[f + 10]) * w;
+      z += (frames[f + 2] * ox + frames[f + 8] * oz + frames[f + 11]) * w;
+      nx += frames[f + 3] * w;
+      ny += frames[f + 4] * w;
+      nz += frames[f + 5] * w;
+    }
+    points[s] = x;
+    points[s + 1] = y;
+    points[s + 2] = z;
+    normals[s] = nx;
+    normals[s + 1] = ny;
+    normals[s + 2] = nz;
+  }
+  item.surfaceLift = Math.max(
+    item.surfaceLift || 0,
+    liftSheetContacts(item, points, points.length / 3, item.spec.height / 2),
+  );
+  for (let i = 0; i < sample.length; i++) {
+    const s = sample[i] * 3,
+      o = offset[i];
+    positions[i * 3] = points[s] + normals[s] * o;
+    positions[i * 3 + 1] = points[s + 1] + normals[s + 1] * o;
+    positions[i * 3 + 2] = points[s + 2] + normals[s + 2] * o;
+  }
 }
