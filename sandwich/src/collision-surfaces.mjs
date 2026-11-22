@@ -132,3 +132,73 @@ export function liftSheetContact(item, center, thickness) {
   item.surfaceLift = Math.max(item.surfaceLift || 0, lift);
   center.y = top;
 }
+
+const CELLS = 12;
+const cellStart = new Int32Array(CELLS * CELLS + 1), cellFill = new Int32Array(CELLS * CELLS);
+const nearby = [], lifts = [];
+let cellBodies = new Int32Array(1024);
+
+// liftSheetContact for every point of a skin at once. A slice lies over a few
+// tiles of each layer beneath it, so the bodies are sorted into a grid first
+// and each point is tested against its own cell only.
+export function liftSheetContacts(item, points, count, thickness) {
+  const clearance = thickness + 0.018;
+  let minX = Infinity, minY = Infinity, minZ = Infinity, maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+  for (let i = 0; i < count * 3; i += 3) {
+    const x = points[i], y = points[i + 1], z = points[i + 2];
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+    if (z < minZ) minZ = z;
+    if (z > maxZ) maxZ = z;
+  }
+  const outside = ({ lowerBound: lo, upperBound: hi }, lift) =>
+    maxX < lo.x || minX > hi.x || maxZ < lo.z || minZ > hi.z ||
+    maxY - lift < lo.y - clearance || minY - lift > hi.y + clearance;
+  const scaleX = CELLS / Math.max(maxX - minX, 1e-9), scaleZ = CELLS / Math.max(maxZ - minZ, 1e-9);
+  const cell = (value, min, scale) => Math.max(0, Math.min(CELLS - 1, Math.floor((value - min) * scale)));
+  nearby.length = lifts.length = 0;
+  cellStart.fill(0);
+  let entries = 0;
+  for (const support of item.supportItems || []) {
+    if (!support.landed) continue;
+    const lift = support.surfaceLift || 0;
+    if (support.bounds && outside(support.bounds, lift)) continue;
+    for (const { body } of support.parts) {
+      if (body.aabbNeedsUpdate) body.updateAABB();
+      if (outside(body.aabb, lift)) continue;
+      nearby.push(body);
+      lifts.push(lift);
+      const { lowerBound: lo, upperBound: hi } = body.aabb;
+      for (let j = cell(lo.z, minZ, scaleZ); j <= cell(hi.z, minZ, scaleZ); j++)
+        for (let i = cell(lo.x, minX, scaleX); i <= cell(hi.x, minX, scaleX); i++) {
+          cellStart[j * CELLS + i + 1]++;
+          entries++;
+        }
+    }
+  }
+  if (!nearby.length) return 0;
+  for (let i = 0; i < CELLS * CELLS; i++) cellFill[i] = cellStart[i + 1] += cellStart[i];
+  if (entries > cellBodies.length) cellBodies = new Int32Array(entries * 2);
+  for (let n = 0; n < nearby.length; n++) {
+    const { lowerBound: lo, upperBound: hi } = nearby[n].aabb;
+    for (let j = cell(lo.z, minZ, scaleZ); j <= cell(hi.z, minZ, scaleZ); j++)
+      for (let i = cell(lo.x, minX, scaleX); i <= cell(hi.x, minX, scaleX); i++)
+        cellBodies[--cellFill[j * CELLS + i]] = n;
+  }
+  let highest = 0;
+  for (let i = 0; i < count * 3; i += 3) {
+    const x = points[i], y = points[i + 1], z = points[i + 2];
+    const at = cell(z, minZ, scaleZ) * CELLS + cell(x, minX, scaleX);
+    let top = y;
+    for (let k = cellStart[at]; k < cellStart[at + 1]; k++) {
+      const lift = lifts[cellBodies[k]];
+      const height = contactHeight(nearby[cellBodies[k]], x, z, y - lift, clearance);
+      if (Number.isFinite(height)) top = Math.max(top, height + lift + thickness + 0.012);
+    }
+    points[i + 1] = top;
+    highest = Math.max(highest, top - y);
+  }
+  return highest;
+}
