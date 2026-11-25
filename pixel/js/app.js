@@ -1,1707 +1,2883 @@
-/**
- * Bent Pixel Lab - Main Application Logic
- * 
- * This file contains the core functionality for the image manipulation application,
- * including effect processing, UI interactions, and audio visualization.
- * 
- * Key components:
- * - Image upload and processing
- * - Effect application (Classic and Grid effects)
- * - Theme management
- * - Audio generation from image data
- * - Preset management
- */
+import {
+  STORAGE_PRESETS_KEY,
+  STORAGE_SKIN_KEY,
+  VALID_SKINS,
+  HEX_ROWS_PER_PAGE,
+  MAX_HISTORY,
+  SNAP_DIST,
+  getHexCols,
+  getHexPageSize,
+  SKIN_SPECTRUM,
+  SEG_SOI,
+  SEG_DQT,
+  SEG_DHT,
+  SEG_SCAN,
+  SEG_EOI,
+  SPECIMENS,
+  CELL_COORDS,
+  CLASSIC_EFFECTS,
+  DEFAULT_PRESETS,
+  GRID_EFFECTS,
+  LEARNING_NOTES,
+  JPEG_SEG_NOTES
+} from './constants.js';
+import { renderSpecimenIntoCanvas } from './specimens.js';
+import { applyClassicEffects, applySpatialGridEffects } from './effects.js';
+import { canvasToJpegBytes, parseJpegStructure, decodeJpegBytesAsync } from './hex.js';
+import { encodeGif89a } from './gif.js';
+import { synthesizeImageAudioBuffer, encodeAudioBufferToWav, formatMmSs } from './audio.js';
 
-const GRID_SIZE = 3;
+/* ============================================================
+   APPLICATION STATE
+   ============================================================ */
+const state = {
+  mode: 'bend',      // bend | grid | hex | gif
+  skin: 'silver',    // silver | carbon
+  visStyle: 'bars',  // bars | mirror | wave
+  specimenIndex: 0,
+  specimenLabel: SPECIMENS[0].label,
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Theme switching functionality
-    const themeToggle = document.getElementById('themeToggle');
-    const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-    
-    // Add styles
-    const style = document.createElement('style');
-    style.textContent = `
-        #themeToggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 60px;
-            height: 32px;
-            background: var(--surface-color);
-            border: 2px solid var(--pixel-border);
-            cursor: pointer;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-            font-size: 16px;
-            font-family: monospace;
-            transition: all 0.3s ease;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        #themeToggle .icon {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            transition: transform 0.3s ease;
-            color: var(--text-color);
-        }
-        
-        #themeToggle .sun {
-            transform: translateX(${prefersDarkScheme.matches ? '60px' : '0'});
-        }
-        
-        #themeToggle .moon {
-            transform: translateX(${prefersDarkScheme.matches ? '0' : '-60px'});
-        }
-        
-        #themeToggle:hover {
-            transform: scale(1.05);
-            box-shadow: 4px 4px 0 var(--pixel-border);
-        }
-        
-        .dark-theme #themeToggle {
-            background: var(--surface-color);
-            border-color: var(--pixel-border);
-        }
-    `;
-    document.head.appendChild(style);
-    
-    // Create theme toggle button content
-    themeToggle.innerHTML = `
-        <span class="icon sun">*</span>
-        <span class="icon moon">○</span>
-    `;
-    
-    // Set initial theme based on system preference
-    if (prefersDarkScheme.matches) {
-        document.body.classList.add('dark-theme');
-    }
-    
-    themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('dark-theme');
-        const isDark = document.body.classList.contains('dark-theme');
-        
-        // Animate the icons
-        const sun = themeToggle.querySelector('.sun');
-        const moon = themeToggle.querySelector('.moon');
-        
-        sun.style.transform = `translateX(${isDark ? '60px' : '0'})`;
-        moon.style.transform = `translateX(${isDark ? '0' : '-60px'})`;
+  sourceCanvas: document.createElement('canvas'),
+  previewWidth: 800,
+  previewHeight: 600,
+
+  // Boots with 3 gentle active bands
+  eqEnabled: true,
+  classic: {
+    bitShift: 24,
+    dataOffset: 0,
+    rgbSplit: 14,
+    scanlines: 30,
+    pathSort: 0,
+    seedGrowth: 0,
+    pixelSort: 0
+  },
+  activePreset: '',
+  userPresets: {},
+
+  activeGridEffect: 'pixelflow',
+  gridStates: {
+    pixelflow: new Array(9).fill(false),
+    vortex:    new Array(9).fill(false),
+    shatter:   new Array(9).fill(false),
+    ripple:    new Array(9).fill(false),
+    neon:      new Array(9).fill(false),
+    prism:     new Array(9).fill(false)
+  },
+
+  // Unified 25-step Undo / Redo History
+  undoStack: [],
+  redoStack: [],
+
+  // Native JPEG HEX state
+  hexQuality: 0.72,
+  hexBaseBytes: null,
+  hexBytes: null,
+  hexSegments: null,
+  hexScanStart: 0,
+  hexScanEnd: 0,
+  hexHeaderLocked: true,
+  hexModifiedSet: new Set(),
+  hexPage: 0,
+  hexSelectedIdx: 0,
+  hexEditNibble: '',
+  hexDecodeFault: false,
+  hexActiveOutput: false,
+  hexLastObjectUrl: null,
+  lastHexCols: 8,
+
+  // GIF89a loop state
+  gifMode: 'sweep',
+  gifFramesCount: 10,
+  gifFps: 10,
+  gifResCap: 320,
+  gifFrames: [],
+  gifPlaying: false,
+  gifPlayIdx: 0,
+  gifTimer: null,
+  gifBuildSeq: 0,
+  gifLastBytes: null,
+
+  // Web Audio Sonifier + Spectrum Analyzer state
+  audioCtx: null,
+  audioGain: null,
+  audioAnalyser: null,
+  audioFreqBuf: null,
+  audioTimeBuf: null,
+  audioBuffer: null,
+  audioSource: null,
+  audioPlaying: false,
+  audioStartCtxTime: 0,
+  audioOffsetSec: 0,
+  audioStale: true,
+  lastWavBytes: null,
+  volume: 0.55,
+  muted: false,
+
+  // Spectrum visual buffers
+  idleBins: new Float32Array(22),
+  peakVals: new Float32Array(22),
+  specPhase: 0,
+
+  // Learning Bar state
+  tipsVisible: true,
+  learnSticky: null,
+
+  // Real Desktop Window Manager state
+  zCounter: 20,
+  layoutDirty: false,
+  winRects: {},
+  shaded: { canvas: false, sound: false, studio: false, guide: false }
+};
+
+/* ============================================================
+   DOM REFERENCES & HELPERS
+   ============================================================ */
+const $ = (id) => document.getElementById(id);
+const desktopStage = $('desktopStage');
+const canvasCavity = $('canvasCavity');
+const artworkFrame = $('artworkFrame');
+const photoCanvas = $('photoCanvas');
+const photoCtx = photoCanvas.getContext('2d', { willReadFrequently: true });
+const originalCanvas = $('originalCanvas');
+const originalCtx = originalCanvas.getContext('2d', { willReadFrequently: true });
+const gridOverlay = $('gridOverlay');
+const hexScanline = $('hexScanline');
+const hexFaultPlate = $('hexFaultPlate');
+const learningBar = $('learningBar');
+const photoPopover = $('photoPopover');
+const presetDrawer = $('presetDrawer');
+const winGuide = $('winGuide');
+const toastEl = $('toast');
+const spectrumCanvas = $('spectrumCanvas');
+const specCtx = spectrumCanvas.getContext('2d');
+
+const WINDOWS = {
+  canvas: $('winCanvas'),
+  sound:  $('winSound'),
+  studio: $('winStudio'),
+  guide:  $('winGuide')
+};
+
+const faderControllers = new Map();
+let renderPending = false;
+let toastTimer = null;
+let learnResetTimer = null;
+let visFlashTimer = null;
+let audioSeekCtrl = null;
+
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('is-visible');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('is-visible'), 1800);
+}
+
+/* ============================================================
+   REAL DESKTOP WINDOW MANAGER (DRAG + MAGNETIC SNAP + WINDOWSHADE)
+   ============================================================ */
+function isDesktopWindowMode() {
+  return window.innerWidth >= 1060;
+}
+
+function isMobileStackMode() {
+  return window.innerWidth <= 767;
+}
+
+function computeDefaultWindowRects() {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const rigW = Math.min(1120, vw - 48);
+  const rigH = Math.min(820, vh - 48);
+  const ox = Math.max(16, Math.round((vw - rigW) / 2));
+  const oy = Math.max(16, Math.round((vh - rigH) / 2));
+
+  const canvasW = Math.round(rigW * 0.575);
+  const rightX = ox + canvasW - 1;
+  const rightW = rigW - canvasW + 1;
+  const soundH = 224;
+  const studioY = oy + soundH - 1;
+  const studioH = rigH - soundH + 1;
+
+  const guideW = Math.min(484, vw - 32);
+  const guideH = Math.min(638, vh - 48);
+  const guideX = isDesktopWindowMode()
+    ? Math.max(20, Math.min(vw - guideW - 16, ox + canvasW + 6))
+    : Math.max(12, Math.round((vw - guideW) / 2));
+  const guideY = isDesktopWindowMode()
+    ? Math.max(20, oy + 34)
+    : Math.max(16, Math.round((vh - guideH) / 2));
+
+  return {
+    canvas: { x: ox, y: oy, w: canvasW, h: rigH },
+    sound:  { x: rightX, y: oy, w: rightW, h: soundH },
+    studio: { x: rightX, y: studioY, w: rightW, h: studioH },
+    guide:  { x: guideX, y: guideY, w: guideW, h: guideH }
+  };
+}
+
+function applyWindowRect(winKey, rect) {
+  const el = WINDOWS[winKey];
+  if (!el || !rect) return;
+  state.winRects[winKey] = { ...rect };
+  if (isMobileStackMode()) return;
+  if (winKey !== 'guide' && !isDesktopWindowMode()) return;
+  el.style.left = Math.round(rect.x) + 'px';
+  el.style.top = Math.round(rect.y) + 'px';
+  el.style.width = Math.round(rect.w) + 'px';
+  el.style.height = Math.round(rect.h) + 'px';
+}
+
+function focusWindow(winKey) {
+  const el = WINDOWS[winKey];
+  if (!el) return;
+  state.zCounter += 1;
+  el.style.zIndex = String(state.zCounter);
+  Object.entries(WINDOWS).forEach(([k, w]) => w.classList.toggle('is-focused', k === winKey));
+}
+
+function setLayoutDirty(dirty) {
+  state.layoutDirty = !!dirty;
+  $('resetLayoutChip').hidden = !state.layoutDirty || !isDesktopWindowMode();
+}
+
+function setWindowShaded(winKey, force) {
+  const el = WINDOWS[winKey];
+  if (!el) return;
+  if (isMobileStackMode()) return;
+  if (winKey !== 'guide' && !isDesktopWindowMode()) return;
+  const next = typeof force === 'boolean' ? force : !state.shaded[winKey];
+  state.shaded[winKey] = next;
+  el.classList.toggle('is-shaded', next);
+  const btn = el.querySelector('[data-shade-btn]');
+  if (btn) btn.textContent = next ? '+' : '_';
+  if (next) setLayoutDirty(true);
+  else checkIfLayoutClean();
+  if (winKey === 'canvas' && !next) requestAnimationFrame(layoutArtworkFrame);
+}
+
+function checkIfLayoutClean() {
+  if (!isDesktopWindowMode()) return;
+  const defs = computeDefaultWindowRects();
+  let dirty = false;
+  for (const k of ['canvas', 'sound', 'studio']) {
+    if (state.shaded[k]) { dirty = true; break; }
+    const r = state.winRects[k];
+    if (!r || Math.abs(r.x - defs[k].x) > 3 || Math.abs(r.y - defs[k].y) > 3) { dirty = true; break; }
+  }
+  setLayoutDirty(dirty);
+}
+
+function resetWindowLayout(silent) {
+  const defs = computeDefaultWindowRects();
+  for (const k of ['canvas', 'sound', 'studio', 'guide']) {
+    state.shaded[k] = false;
+    const el = WINDOWS[k];
+    el.classList.remove('is-shaded');
+    const btn = el.querySelector('[data-shade-btn]');
+    if (btn) btn.textContent = '_';
+    applyWindowRect(k, defs[k]);
+  }
+  WINDOWS.canvas.style.zIndex = '10';
+  WINDOWS.studio.style.zIndex = '11';
+  WINDOWS.sound.style.zIndex = '12';
+  WINDOWS.guide.style.zIndex = '40';
+  state.zCounter = 40;
+  setLayoutDirty(false);
+  requestAnimationFrame(layoutArtworkFrame);
+  if (!silent) showToast('Window layout reset');
+}
+
+function hideSnapGuides() {
+  $('snapGuideV').classList.remove('is-visible');
+  $('snapGuideH').classList.remove('is-visible');
+}
+
+function getVisualWindowRect(winKey) {
+  const r = state.winRects[winKey];
+  if (!r) return null;
+  return { x: r.x, y: r.y, w: r.w, h: state.shaded[winKey] ? 27 : r.h };
+}
+
+function initWindowManager() {
+  resetWindowLayout(true);
+
+  Object.entries(WINDOWS).forEach(([winKey, el]) => {
+    el.addEventListener('pointerdown', () => focusWindow(winKey));
+
+    const handle = el.querySelector('[data-drag-handle]');
+    const shadeBtn = el.querySelector('[data-shade-btn]');
+
+    el.querySelectorAll('.wa-win-btn').forEach((btn) => {
+      btn.addEventListener('pointerdown', (e) => e.stopPropagation());
     });
-    
-    // Listen for system theme changes
-    prefersDarkScheme.addEventListener('change', (e) => {
-        const isDark = e.matches;
-        document.body.classList.toggle('dark-theme', isDark);
-        
-        const sun = themeToggle.querySelector('.sun');
-        const moon = themeToggle.querySelector('.moon');
-        
-        sun.style.transform = `translateX(${isDark ? '60px' : '0'})`;
-        moon.style.transform = `translateX(${isDark ? '0' : '-60px'})`;
-    });
 
-    const uploadSection = document.getElementById('uploadSection');
-    const photoInput = document.getElementById('photoInput');
-    const editor = document.getElementById('editor');
-    const previewArea = document.getElementById('previewArea');
-    const canvas = document.getElementById('photoCanvas');
-    const ctx = canvas.getContext('2d');
-    const drawingOverlay = document.getElementById('drawingOverlay');
-    const overlayCtx = drawingOverlay.getContext('2d');
-    
-    let currentImage = null;
-    let originalWidth = 0;
-    let originalHeight = 0;
-    let originalScale = 0;
-
-    // Debug helper
-    const debug = document.getElementById('debug');
-    /**
-     * Logs a message to the debug console if debug mode is enabled
-     * @param {string} msg - The message to log
-     */
-    function log(msg) {
-        console.log(msg);
-        if (debug) {
-            debug.textContent = msg;
-            debug.style.display = 'block';
-            setTimeout(() => debug.style.display = 'none', 3000);
-        }
-    }
-
-    // Verify all required elements exist
-    const requiredElements = {
-        uploadSection,
-        photoInput,
-        editor,
-        previewArea,
-        canvas,
-        drawingOverlay
-    };
-
-    for (const [name, element] of Object.entries(requiredElements)) {
-        if (!element) {
-            console.error(`Required element not found: ${name}`);
-            return;
-        }
-    }
-
-    log('All elements initialized successfully');
-
-    const sliders = {
-        bitShift: document.getElementById('bitShift'),
-        dataOffset: document.getElementById('dataOffset'),
-        rgbSplit: document.getElementById('rgbSplit'),
-        scanlines: document.getElementById('scanlines'),
-        pathSort: document.getElementById('pathSort'),
-        seedGrowth: document.getElementById('seedGrowth'),
-        pixelSort: document.getElementById('pixelSort')
-    };
-
-    // Add slider reset functionality
-    document.querySelectorAll('.slider-reset').forEach(button => {
-        const targetId = button.dataset.target;
-        if (!targetId) return;
-        
-        button.addEventListener('click', () => {
-            const slider = document.getElementById(targetId);
-            const numberInput = slider?.nextElementSibling;
-            if (slider && numberInput) {
-                slider.value = 0;
-                numberInput.value = 0;
-                redrawWithEffects();
-            }
-        });
-    });
-
-    // Add null check for sliders
-    Object.entries(sliders).forEach(([key, slider]) => {
-        if (!slider) {
-            console.error(`Slider not found: ${key}`);
-            return;
-        }
-        const numberInput = slider.nextElementSibling;
-        if (!numberInput) {
-            console.error(`Number input not found for: ${key}`);
-            return;
-        }
-        
-        slider.addEventListener('input', (e) => {
-            numberInput.value = e.target.value;
-            redrawWithEffects();
-        });
-
-        numberInput.addEventListener('input', (e) => {
-            slider.value = e.target.value;
-            redrawWithEffects();
-        });
-    });
-
-    document.getElementById('randomize').addEventListener('click', () => {
-        Object.values(sliders).forEach(slider => {
-            const randomValue = Math.floor(Math.random() * slider.max);
-            slider.value = randomValue;
-            slider.nextElementSibling.value = randomValue; // Update number input
-        });
-        redrawWithEffects();
-    });
-
-    // File Upload Handlers
-    uploadSection.addEventListener('dragover', (e) => {
-        e.preventDefault();
+    if (shadeBtn) {
+      shadeBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        uploadSection.classList.add('drag-over');
-    });
+        setWindowShaded(winKey);
+      });
+    }
 
-    uploadSection.addEventListener('dragleave', (e) => {
+    if (handle) {
+      handle.addEventListener('dblclick', (e) => {
+        if (e.target.closest('.wa-win-btn')) return;
+        setWindowShaded(winKey);
+      });
+
+      let dragging = false;
+      let startX = 0, startY = 0, origX = 0, origY = 0;
+
+      handle.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.wa-win-btn')) return;
+        if (isMobileStackMode()) return;
+        if (winKey !== 'guide' && !isDesktopWindowMode()) return;
         e.preventDefault();
-        e.stopPropagation();
-        uploadSection.classList.remove('drag-over');
-    });
+        focusWindow(winKey);
+        const cur = state.winRects[winKey] || computeDefaultWindowRects()[winKey];
+        dragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        origX = cur.x;
+        origY = cur.y;
+        el.classList.add('is-dragging');
+        document.body.classList.add('is-win-dragging');
+        try { handle.setPointerCapture(e.pointerId); } catch (_) {}
+      });
 
-    uploadSection.addEventListener('drop', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        uploadSection.classList.remove('drag-over');
-        
-        const file = e.dataTransfer.files[0];
-        if (file && file.type.startsWith('image/')) {
-            handleImage(file);
-        } else {
-            log('Please drop an image file');
+      handle.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        const cur = state.winRects[winKey];
+        const w = cur.w;
+        const h = state.shaded[winKey] ? 27 : cur.h;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+
+        let nx = origX + (e.clientX - startX);
+        let ny = origY + (e.clientY - startY);
+
+        // Magnetic edge snapping against other visible windows + viewport margins
+        let snappedV = null;
+        let snappedH = null;
+        let bestDx = SNAP_DIST + 1;
+        let bestDy = SNAP_DIST + 1;
+
+        const xTargets = [{ val: 16, line: 16 }, { val: vw - 16 - w, line: vw - 16 }];
+        const yTargets = [{ val: 16, line: 16 }, { val: vh - 16 - h, line: vh - 16 }];
+
+        for (const otherKey of Object.keys(WINDOWS)) {
+          if (otherKey === winKey) continue;
+          const otherEl = WINDOWS[otherKey];
+          if (otherEl.hidden) continue;
+          const o = getVisualWindowRect(otherKey);
+          if (!o) continue;
+          xTargets.push(
+            { val: o.x + o.w - 1, line: o.x + o.w }, // snap left edge flush to other's right
+            { val: o.x - w + 1,   line: o.x },       // snap right edge flush to other's left
+            { val: o.x,           line: o.x },       // align left edges
+            { val: o.x + o.w - w, line: o.x + o.w }  // align right edges
+          );
+          yTargets.push(
+            { val: o.y + o.h - 1, line: o.y + o.h }, // snap top edge flush to other's bottom
+            { val: o.y - h + 1,   line: o.y },       // snap bottom edge flush to other's top
+            { val: o.y,           line: o.y },       // align top edges
+            { val: o.y + o.h - h, line: o.y + o.h }  // align bottom edges
+          );
         }
-    });
 
-    // Simplified file input handler
-    photoInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file && file.type.startsWith('image/')) {
-            handleImage(file);
+        for (const t of xTargets) {
+          const d = Math.abs(nx - t.val);
+          if (d < bestDx) { bestDx = d; nx = t.val; snappedV = t.line; }
         }
-    });
+        for (const t of yTargets) {
+          const d = Math.abs(ny - t.val);
+          if (d < bestDy) { bestDy = d; ny = t.val; snappedH = t.line; }
+        }
 
-    // Add initialization function
-    /**
-     * Initializes the canvas and sets up the initial drawing context
-     * @returns {void}
-     */
-    function initializeCanvas() {
-        canvas.width = previewArea.clientWidth || 800;
-        canvas.height = 400;
-        ctx.fillStyle = '#333';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Keep window reachable inside viewport
+        nx = Math.max(6, Math.min(vw - Math.min(w, 120), nx));
+        ny = Math.max(6, Math.min(vh - 36, ny));
+
+        applyWindowRect(winKey, { x: nx, y: ny, w: cur.w, h: cur.h });
+
+        const gV = $('snapGuideV');
+        const gH = $('snapGuideH');
+        if (snappedV !== null) { gV.style.left = Math.round(snappedV) + 'px'; gV.classList.add('is-visible'); }
+        else gV.classList.remove('is-visible');
+        if (snappedH !== null) { gH.style.top = Math.round(snappedH) + 'px'; gH.classList.add('is-visible'); }
+        else gH.classList.remove('is-visible');
+
+        if (winKey !== 'guide') setLayoutDirty(true);
+      });
+
+      const endDrag = (e) => {
+        if (!dragging) return;
+        dragging = false;
+        el.classList.remove('is-dragging');
+        document.body.classList.remove('is-win-dragging');
+        hideSnapGuides();
+        try { handle.releasePointerCapture(e.pointerId); } catch (_) {}
+        checkIfLayoutClean();
+      };
+      handle.addEventListener('pointerup', endDrag);
+      handle.addEventListener('pointercancel', endDrag);
     }
+  });
 
-    // Initialize canvas on load
-    initializeCanvas();
+  $('resetLayoutChip').addEventListener('click', () => resetWindowLayout(false));
 
-    // Add high-res processing canvas
-    const processingCanvas = document.createElement('canvas');
-    const processingCtx = processingCanvas.getContext('2d');
-
-    /**
-     * Handles the processing of an uploaded image file
-     * @param {File} file - The image file to process
-     * @returns {Promise<void>}
-     */
-    function handleImage(file) {
-        if (!file || !file.type || !file.type.startsWith('image/')) {
-            log('Invalid file type');
-            return;
+  window.addEventListener('resize', () => {
+    if (isDesktopWindowMode()) {
+      if (!state.layoutDirty) resetWindowLayout(true);
+      else {
+        // Keep guide & dragged windows cleanly inside new viewport
+        for (const k of Object.keys(WINDOWS)) {
+          const r = state.winRects[k];
+          if (!r) continue;
+          applyWindowRect(k, {
+            x: Math.max(6, Math.min(window.innerWidth - 120, r.x)),
+            y: Math.max(6, Math.min(window.innerHeight - 40, r.y)),
+            w: r.w, h: r.h
+          });
         }
-
-        log('Processing image...');
-
-        uploadSection.classList.add('hidden');
-        editor.classList.add('visible');
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = new Image();
-            
-            img.onload = function() {
-                currentImage = img;
-                log('Image loaded, updating canvas...');
-
-                // Store original dimensions
-                originalWidth = img.width;
-                originalHeight = img.height;
-
-                // Calculate maximum dimensions for preview
-                const maxPreviewWidth = previewArea.clientWidth - 40; // Account for padding
-                const maxPreviewHeight = window.innerHeight * 0.7; // Limit height to 70% of viewport
-
-                // Calculate scale while maintaining aspect ratio
-                const scaleWidth = maxPreviewWidth / originalWidth;
-                const scaleHeight = maxPreviewHeight / originalHeight;
-                const previewScale = Math.min(scaleWidth, scaleHeight);
-
-                // Set preview canvas dimensions
-                canvas.width = Math.floor(originalWidth * previewScale);
-                canvas.height = Math.floor(originalHeight * previewScale);
-                drawingOverlay.width = canvas.width;
-                drawingOverlay.height = canvas.height;
-
-                // Set up processing canvas at original resolution
-                processingCanvas.width = originalWidth;
-                processingCanvas.height = originalHeight;
-
-                // Draw preview
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                // Clear overlay
-                overlayCtx.clearRect(0, 0, drawingOverlay.width, drawingOverlay.height);
-                
-                // Reset all sliders
-                Object.values(sliders).forEach(slider => {
-                    slider.value = 0;
-                    slider.nextElementSibling.value = 0;
-                });
-
-                log('Canvas updated');
-            };
-
-            img.src = e.target.result;
-        };
-
-        reader.readAsDataURL(file);
-    }
-
-    // Add window resize handler to maintain proper scaling
-    window.addEventListener('resize', () => {
-        if (currentImage) {
-            const maxPreviewWidth = previewArea.clientWidth - 40;
-            const maxPreviewHeight = window.innerHeight * 0.7;
-            
-            const scaleWidth = maxPreviewWidth / originalWidth;
-            const scaleHeight = maxPreviewHeight / originalHeight;
-            const previewScale = Math.min(scaleWidth, scaleHeight);
-
-            canvas.width = Math.floor(originalWidth * previewScale);
-            canvas.height = Math.floor(originalHeight * previewScale);
-            drawingOverlay.width = canvas.width;
-            drawingOverlay.height = canvas.height;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
-            
-            overlayCtx.clearRect(0, 0, drawingOverlay.width, drawingOverlay.height);
-            redrawWithEffects();
-        }
-    });
-
-    // Modify redrawWithEffects to work with preview resolution
-    function redrawWithEffects() {
-        if (!currentImage) return;
-
-        // Clear and draw original image
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
-
-        // Get preview resolution data
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        
-        // Apply effects at preview resolution
-        applySliderEffects(imageData);
-        applyGridEffects(imageData);
-        
-        // Update preview canvas
-        ctx.putImageData(imageData, 0, 0);
-    }
-
-    // Modify save functionality to process at full resolution
-    document.getElementById('save').addEventListener('click', () => {
-        if (!currentImage || !processingCanvas) return;
-        
-        try {
-            // Draw original image at full resolution
-            processingCanvas.width = originalWidth;
-            processingCanvas.height = originalHeight;
-            processingCtx.drawImage(currentImage, 0, 0, originalWidth, originalHeight);
-            
-            // Get full resolution data
-            const fullResData = processingCtx.getImageData(0, 0, originalWidth, originalHeight);
-            
-            // Apply effects at full resolution
-            applySliderEffects(fullResData);
-            applyGridEffects(fullResData);
-            
-            // Update processing canvas with full resolution result
-            processingCtx.putImageData(fullResData, 0, 0);
-            
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const link = document.createElement('a');
-            
-            // Determine best format based on image type and effects
-            const hasTransparency = checkForTransparency(processingCanvas);
-            const format = hasTransparency ? 'image/png' : 'image/jpeg';
-            const quality = format === 'image/jpeg' ? 0.95 : undefined;
-            
-            link.download = `bent-pixel-${timestamp}${format === 'image/jpeg' ? '.jpg' : '.png'}`;
-            link.href = processingCanvas.toDataURL(format, quality);
-            link.click();
-        } catch (error) {
-            console.error('Error saving image:', error);
-            alert('There was an error saving your image. Please try again.');
-        }
-    });
-
-    // Helper function to check for transparency
-    /**
-     * Checks if the canvas contains any transparent pixels
-     * @param {HTMLCanvasElement} canvas - The canvas to check
-     * @returns {boolean} True if the canvas contains transparent pixels
-     */
-    function checkForTransparency(canvas) {
-        const ctx = canvas.getContext('2d');
-        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        for (let i = 3; i < data.length; i += 4) {
-            if (data[i] < 255) return true;
-        }
-        return false;
-    }
-
-    /**
-     * Applies all slider-based effects to the image data
-     * @param {ImageData} imageData - The image data to process
-     * @returns {ImageData} The processed image data
-     */
-    function applySliderEffects(imageData) {
-        if (!currentImage) return;
-        
-        const data = imageData.data;
-        const originalData = new Uint8ClampedArray(data);
-        const width = imageData.width;
-        const height = imageData.height;
-
-        // Bit shifting effect
-        const bitShiftAmount = parseInt(sliders.bitShift.value);
-        if (bitShiftAmount > 0) {
-            for (let i = 0; i < data.length; i += 4) {
-                data[i] = data[i] << (bitShiftAmount % 8);
-                data[i + 1] = data[i + 1] << ((bitShiftAmount + 2) % 8);
-                data[i + 2] = data[i + 2] << ((bitShiftAmount + 4) % 8);
-            }
-        }
-
-        // Data offset effect
-        const offsetAmount = parseInt(sliders.dataOffset.value) * 100;
-        if (offsetAmount > 0) {
-            const chunk = data.slice(0, offsetAmount);
-            data.copyWithin(0, offsetAmount);
-            data.set(chunk, data.length - offsetAmount);
-        }
-
-        // RGB split effect
-        const rgbAmount = parseInt(sliders.rgbSplit.value);
-        if (rgbAmount > 0) {
-            const verticalOffset = rgbAmount * width * 4;
-            for (let i = 0; i < data.length; i += 4) {
-                data[i] = originalData[Math.max(0, i - verticalOffset)];
-                data[i + 1] = originalData[i + 1];
-                data[i + 2] = originalData[Math.min(data.length - 1, i + verticalOffset)];
-            }
-        }
-
-        // Scanline effect
-        const scanlineIntensity = parseInt(sliders.scanlines.value);
-        if (scanlineIntensity > 0) {
-            const intensity = scanlineIntensity / 100;
-            for (let y = 0; y < height; y++) {
-                const scanlineMod = (y % 4 < 2) ? 1 : 0.7;
-                const rowOffset = y * width * 4;
-                for (let x = 0; x < width; x++) {
-                    const i = rowOffset + x * 4;
-                    for (let c = 0; c < 3; c++) {
-                        data[i + c] = originalData[i + c] * scanlineMod;
-                    }
-                }
-            }
-        }
-
-        // Path Sort effect (optimized)
-        const pathSortIntensity = parseInt(sliders.pathSort.value);
-        if (pathSortIntensity > 0) {
-            const intensity = pathSortIntensity / 100;
-            const blockSize = 32; // Process in blocks for better performance
-            
-            for (let blockY = 0; blockY < height; blockY += blockSize) {
-                for (let blockX = 0; blockX < width; blockX += blockSize) {
-                    const blockWidth = Math.min(blockSize, width - blockX);
-                    const blockHeight = Math.min(blockSize, height - blockY);
-                    
-                    // Process block
-                    for (let y = blockY; y < blockY + blockHeight; y++) {
-                        const row = new Float64Array(blockWidth);
-                        const rowOffset = y * width * 4;
-                        
-                        // Calculate brightness for sorting
-                        for (let x = 0; x < blockWidth; x++) {
-                            const i = rowOffset + (blockX + x) * 4;
-                            row[x] = (data[i] + data[i + 1] + data[i + 2]) / 3;
-                        }
-                        
-                        // Sort row segment
-                        const indices = Array.from({length: blockWidth}, (_, i) => i);
-                        indices.sort((a, b) => row[a] - row[b]);
-                        
-                        // Apply sorted values
-                        const tempRow = new Uint8ClampedArray(blockWidth * 4);
-                        for (let x = 0; x < blockWidth; x++) {
-                            const srcIdx = rowOffset + (blockX + indices[x]) * 4;
-                            const destIdx = x * 4;
-                            for (let c = 0; c < 4; c++) {
-                                tempRow[destIdx + c] = data[srcIdx + c];
-                            }
-                        }
-                        
-                        // Copy back to main data
-                        for (let x = 0; x < blockWidth; x++) {
-                            const destIdx = rowOffset + (blockX + x) * 4;
-                            const srcIdx = x * 4;
-                            for (let c = 0; c < 4; c++) {
-                                data[destIdx + c] = tempRow[srcIdx + c];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Seed Growth effect (optimized)
-        const seedGrowthAmount = parseInt(sliders.seedGrowth.value);
-        if (seedGrowthAmount > 0) {
-            const growthRadius = Math.floor(seedGrowthAmount / 10) + 1;
-            const threshold = 200;
-            
-            // Find seed points (optimized)
-            const seeds = [];
-            for (let y = 0; y < height; y += 4) {
-                const rowOffset = y * width * 4;
-                for (let x = 0; x < width; x += 4) {
-                    const i = rowOffset + x * 4;
-                    const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3;
-                    if (brightness > threshold) {
-                        seeds.push({x, y});
-                    }
-                }
-            }
-            
-            // Process seeds in batches
-            const batchSize = 100;
-            for (let i = 0; i < seeds.length; i += batchSize) {
-                const batch = seeds.slice(i, i + batchSize);
-                batch.forEach(seed => {
-                    const seedIdx = (seed.y * width + seed.x) * 4;
-                    for (let dy = -growthRadius; dy <= growthRadius; dy++) {
-                        const y = seed.y + dy;
-                        if (y < 0 || y >= height) continue;
-                        
-                        for (let dx = -growthRadius; dx <= growthRadius; dx++) {
-                            const x = seed.x + dx;
-                            if (x < 0 || x >= width) continue;
-                            
-                            const distance = Math.sqrt(dx * dx + dy * dy);
-                            if (distance <= growthRadius) {
-                                const idx = (y * width + x) * 4;
-                                const influence = 1 - (distance / growthRadius);
-                                
-                                for (let c = 0; c < 3; c++) {
-                                    data[idx + c] = Math.min(255,
-                                        data[idx + c] * (1 - influence) +
-                                        originalData[seedIdx + c] * influence
-                                    );
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-        // Pixel Sort effect (optimized)
-        const sortThreshold = parseInt(sliders.pixelSort.value);
-        if (sortThreshold > 0) {
-            const rowSize = width * 4;
-            for (let y = 0; y < height; y++) {
-                const rowOffset = y * rowSize;
-                const row = new Float64Array(width);
-                
-                // Calculate brightness values
-                for (let x = 0; x < width; x++) {
-                    const i = rowOffset + x * 4;
-                    row[x] = (data[i] + data[i + 1] + data[i + 2]) / 3;
-                }
-                
-                // Find sortable segments
-                let start = 0;
-                for (let x = 0; x < width; x++) {
-                    if (row[x] >= sortThreshold || x === width - 1) {
-                        if (x > start) {
-                            // Sort segment
-                            const indices = Array.from({length: x - start}, (_, i) => start + i);
-                            indices.sort((a, b) => row[a] - row[b]);
-                            
-                            // Apply sorted values
-                            const tempSegment = new Uint8ClampedArray((x - start) * 4);
-                            for (let i = 0; i < indices.length; i++) {
-                                const srcIdx = rowOffset + indices[i] * 4;
-                                const destIdx = i * 4;
-                                for (let c = 0; c < 4; c++) {
-                                    tempSegment[destIdx + c] = data[srcIdx + c];
-                                }
-                            }
-                            
-                            // Copy back to main data
-                            for (let i = 0; i < x - start; i++) {
-                                const destIdx = rowOffset + (start + i) * 4;
-                                const srcIdx = i * 4;
-                                for (let c = 0; c < 4; c++) {
-                                    data[destIdx + c] = tempSegment[srcIdx + c];
-                                }
-                            }
-                        }
-                        start = x + 1;
-                    }
-                }
-            }
-        }
-    }
-
-    // Replace single gridState with effect-specific states
-    const effectStates = {
-        pixelflow: new Array(GRID_SIZE * GRID_SIZE).fill(false),
-        vortex: new Array(GRID_SIZE * GRID_SIZE).fill(false),
-        shatter: new Array(GRID_SIZE * GRID_SIZE).fill(false),
-        ripple: new Array(GRID_SIZE * GRID_SIZE).fill(false),
-        neon: new Array(GRID_SIZE * GRID_SIZE).fill(false),
-        prism: new Array(GRID_SIZE * GRID_SIZE).fill(false)
-    };
-
-    // Initialize grid element
-    const grid = document.getElementById('glitchGrid');
-
-    if (!grid) {
-        console.error('Grid element not found!');
+      }
     } else {
-        // Create grid cells
-        for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
-            const cell = document.createElement('div');
-            cell.className = 'grid-cell';
-            cell.dataset.index = i;
-            
-            cell.addEventListener('click', () => {
-                const currentEffect = document.getElementById('gridEffectType').value;
-                effectStates[currentEffect][i] = !effectStates[currentEffect][i];
-                cell.classList.toggle('active');
-                redrawWithEffects();
-            });
-            
-            // Add drag selection
-            cell.addEventListener('mouseenter', (e) => {
-                if (e.buttons === 1) { // Left mouse button
-                    const currentEffect = document.getElementById('gridEffectType').value;
-                    cell.classList.add('active');
-                    effectStates[currentEffect][i] = true;
-                    redrawWithEffects();
-                }
-            });
-            
-            grid.appendChild(cell);
-        }
+      $('resetLayoutChip').hidden = true;
+      if (!isMobileStackMode() && !winGuide.hidden) {
+        applyWindowRect('guide', computeDefaultWindowRects().guide);
+      }
     }
+    if (state.hexBytes && getHexCols() !== state.lastHexCols) {
+      state.hexPage = Math.floor(state.hexSelectedIdx / getHexPageSize());
+      renderHexSheet();
+    }
+    requestAnimationFrame(layoutArtworkFrame);
+  });
+}
 
-    // Add grid effect type change handler
-    document.getElementById('gridEffectType').addEventListener('change', (e) => {
-        // Update grid UI to show current effect's state
-        const currentEffect = e.target.value;
-        document.querySelectorAll('.grid-cell').forEach((cell, i) => {
-            if (effectStates[currentEffect][i]) {
-                cell.classList.add('active');
-            } else {
-                cell.classList.remove('active');
-            }
-        });
+/* ============================================================
+   UNIFIED 25-STEP UNDO / REDO HISTORY ENGINE
+   ============================================================ */
+function captureSnapshot() {
+  const gridCopy = {};
+  for (const fx of GRID_EFFECTS) gridCopy[fx.key] = state.gridStates[fx.key].slice();
+  return {
+    classic: { ...state.classic },
+    eqEnabled: state.eqEnabled,
+    activePreset: state.activePreset,
+    activeGridEffect: state.activeGridEffect,
+    gridStates: gridCopy,
+    hexBytes: state.hexBytes ? new Uint8Array(state.hexBytes) : null,
+    hexHeaderLocked: state.hexHeaderLocked,
+    hexActiveOutput: state.hexActiveOutput,
+    hexDecodeFault: state.hexDecodeFault,
+    hexSelectedIdx: state.hexSelectedIdx
+  };
+}
+
+function snapshotsEqual(a, b) {
+  if (!a || !b) return false;
+  if (a.eqEnabled !== b.eqEnabled || a.hexActiveOutput !== b.hexActiveOutput) return false;
+  for (const fx of CLASSIC_EFFECTS) if (a.classic[fx.key] !== b.classic[fx.key]) return false;
+  for (const fx of GRID_EFFECTS) {
+    for (let i = 0; i < 9; i++) if (a.gridStates[fx.key][i] !== b.gridStates[fx.key][i]) return false;
+  }
+  if ((a.hexBytes ? a.hexBytes.length : -1) !== (b.hexBytes ? b.hexBytes.length : -1)) return false;
+  if (a.hexBytes && b.hexBytes) {
+    for (let i = 0; i < a.hexBytes.length; i++) if (a.hexBytes[i] !== b.hexBytes[i]) return false;
+  }
+  return true;
+}
+
+function pushUndoSnapshot() {
+  const snap = captureSnapshot();
+  const last = state.undoStack[state.undoStack.length - 1];
+  if (last && snapshotsEqual(last, snap)) return;
+  state.undoStack.push(snap);
+  if (state.undoStack.length > MAX_HISTORY) state.undoStack.shift();
+  state.redoStack = [];
+  syncUndoRedoUI();
+}
+
+function applySnapshot(snap) {
+  state.classic = { ...snap.classic };
+  state.eqEnabled = snap.eqEnabled;
+  state.activePreset = snap.activePreset;
+  state.activeGridEffect = snap.activeGridEffect;
+  for (const fx of GRID_EFFECTS) state.gridStates[fx.key] = snap.gridStates[fx.key].slice();
+
+  for (const fx of CLASSIC_EFFECTS) {
+    const c = faderControllers.get(fx.key);
+    if (c) c.setValue(state.classic[fx.key]);
+  }
+  syncBypassUI();
+  syncPresetHighlight();
+  syncGridUI();
+
+  if (snap.hexBytes && state.hexBaseBytes) {
+    state.hexBytes = new Uint8Array(snap.hexBytes);
+    state.hexHeaderLocked = snap.hexHeaderLocked;
+    state.hexSelectedIdx = snap.hexSelectedIdx;
+    recomputeHexModifiedSet();
+    syncHexLockUI();
+    renderHexSheet();
+    if (snap.hexActiveOutput || state.mode === 'hex') {
+      decodeHexBytesToCanvas();
+      updateLcdTicker();
+      return;
+    }
+  }
+  redrawCanvasImmediate();
+  if (state.mode === 'gif') buildAndPlayGifLoop();
+}
+
+function performUndo() {
+  if (state.undoStack.length === 0) return false;
+  state.redoStack.push(captureSnapshot());
+  if (state.redoStack.length > MAX_HISTORY) state.redoStack.shift();
+  const prev = state.undoStack.pop();
+  applySnapshot(prev);
+  syncUndoRedoUI();
+  showToast('Undid last change');
+  return true;
+}
+
+function performRedo() {
+  if (state.redoStack.length === 0) return false;
+  state.undoStack.push(captureSnapshot());
+  if (state.undoStack.length > MAX_HISTORY) state.undoStack.shift();
+  const next = state.redoStack.pop();
+  applySnapshot(next);
+  syncUndoRedoUI();
+  showToast('Redid change');
+  return true;
+}
+
+function syncUndoRedoUI() {
+  $('undoBtn').disabled = state.undoStack.length === 0;
+  $('redoBtn').disabled = state.redoStack.length === 0;
+}
+
+/* ============================================================
+   CALM LEARNING BAR & FLOATING FIELD GUIDE
+   ============================================================ */
+function showLearningNote(note, makeSticky) {
+  if (!note) return;
+  clearTimeout(learnResetTimer);
+  $('learnLed').classList.toggle('is-amber', !!note.amber);
+  $('learnLed').classList.toggle('is-on', !note.amber);
+  $('learnTitle').textContent = note.title || '';
+  $('learnOrigin').textContent = note.origin || '';
+  $('learnText').textContent = note.text || '';
+  if (makeSticky) state.learnSticky = note;
+}
+
+function showLearningKey(key, makeSticky) {
+  const n = LEARNING_NOTES[key];
+  if (n) showLearningNote(n, makeSticky);
+}
+
+function resetLearningDeferred() {
+  clearTimeout(learnResetTimer);
+  learnResetTimer = setTimeout(() => {
+    const fb = state.learnSticky || LEARNING_NOTES['mode:' + state.mode];
+    if (fb) showLearningNote(fb, false);
+  }, 65);
+}
+
+function bindTip(el, key) {
+  if (!el || !LEARNING_NOTES[key]) return;
+  el.addEventListener('pointerenter', () => showLearningKey(key, false));
+  el.addEventListener('focus', () => showLearningKey(key, false));
+  el.addEventListener('pointerdown', () => showLearningKey(key, true));
+  el.addEventListener('pointerleave', resetLearningDeferred);
+  el.addEventListener('blur', resetLearningDeferred);
+}
+
+function showHexByteNote(idx, makeSticky) {
+  if (!state.hexBytes || idx < 0 || idx >= state.hexBytes.length) return;
+  const seg = state.hexSegments ? state.hexSegments[idx] : SEG_SCAN;
+  const base = JPEG_SEG_NOTES[seg] || JPEG_SEG_NOTES[SEG_SCAN];
+  const addr = '0x' + idx.toString(16).toUpperCase().padStart(4, '0');
+  const val = state.hexBytes[idx].toString(16).toUpperCase().padStart(2, '0');
+  const isMod = state.hexModifiedSet.has(idx);
+  showLearningNote({
+    title: base.title,
+    origin: addr + ' (' + val + (isMod ? ', edited' : '') + ')',
+    amber: isMod || base.amber,
+    text: base.text
+  }, makeSticky);
+}
+
+function toggleLearningBar(force) {
+  state.tipsVisible = typeof force === 'boolean' ? force : !state.tipsVisible;
+  learningBar.hidden = !state.tipsVisible;
+  $('tipsToggleBtn').textContent = state.tipsVisible ? 'Hide Tips' : 'Show Tips';
+  $('tipsToggleBtn').setAttribute('aria-pressed', String(state.tipsVisible));
+  $('chkTips').textContent = state.tipsVisible ? 'On' : '';
+  requestAnimationFrame(layoutArtworkFrame);
+}
+
+function openFieldGuide(force, tabName) {
+  const willOpen = typeof force === 'boolean' ? force : winGuide.hidden;
+  winGuide.hidden = !willOpen;
+  if (willOpen) {
+    if (!isMobileStackMode()) {
+      if (!state.winRects.guide || !isDesktopWindowMode()) applyWindowRect('guide', computeDefaultWindowRects().guide);
+      else applyWindowRect('guide', state.winRects.guide);
+    }
+    if (state.shaded.guide) setWindowShaded('guide', false);
+    focusWindow('guide');
+    if (tabName) selectGuideTab(tabName);
+  }
+}
+
+function selectGuideTab(tabName) {
+  document.querySelectorAll('.guide-folder-tab').forEach((btn) => {
+    const act = btn.dataset.guideTab === tabName;
+    btn.classList.toggle('is-active', act);
+    btn.setAttribute('aria-selected', String(act));
+  });
+  document.querySelectorAll('.guide-pane').forEach((pane) => {
+    pane.classList.toggle('is-active', pane.dataset.guidePane === tabName);
+  });
+}
+
+function launchGuidedRecipe(recipeId, triggerBtn) {
+  // Apply LIVE on the Canvas WITHOUT closing the floating Field Guide!
+  if (recipeId === 'crt') {
+    setMode('bend');
+    applyPresetValues({ bitShift: 0, dataOffset: 38, rgbSplit: 26, scanlines: 72, pathSort: 0, seedGrowth: 0, pixelSort: 0 }, '');
+    showLearningNote({
+      title: '1978 CRT Tracking Drift',
+      origin: 'Guided Recipe',
+      amber: false,
+      text: 'Applied live on the canvas. Try dragging Scanlines or RGB, or press Play in the Sound window to hear the drift.'
+    }, true);
+    showToast('Applied 1978 CRT Tracking Drift');
+  } else if (recipeId === 'sort') {
+    setMode('bend');
+    applyPresetValues({ bitShift: 0, dataOffset: 0, rgbSplit: 8, scanlines: 0, pathSort: 45, seedGrowth: 24, pixelSort: 168 }, '');
+    showLearningNote({
+      title: 'Painterly Pixel Sort',
+      origin: 'Kim Asendorf, 2012',
+      amber: false,
+      text: 'Applied live on the canvas. Slide Pixel Sort up or down to sweep the brightness threshold, and hold Compare to check.'
+    }, true);
+    showToast('Applied Painterly Pixel Sort');
+  } else if (recipeId === 'hex') {
+    state.hexHeaderLocked = true;
+    setMode('hex');
+    syncHexLockUI();
+    runHexOperator('smear');
+    showLearningNote({
+      title: 'Safe JPEG Byte Surgery',
+      origin: 'Guided Recipe',
+      amber: false,
+      text: 'Header Lock guards the JPEG blueprint. Hover bytes in the Hex Editor to sweep the scanline probe across the canvas.'
+    }, true);
+    showToast('Applied Safe JPEG Byte Surgery');
+  }
+
+  if (triggerBtn) {
+    const orig = triggerBtn.textContent;
+    triggerBtn.textContent = 'Applied';
+    triggerBtn.classList.add('is-cobalt');
+    setTimeout(() => {
+      triggerBtn.textContent = orig;
+      triggerBtn.classList.remove('is-cobalt');
+    }, 1100);
+  }
+}
+
+
+function generateSpecimen(index) {
+  const safeIdx = ((index % SPECIMENS.length) + SPECIMENS.length) % SPECIMENS.length;
+  state.sourceCanvas.width = 800;
+  state.sourceCanvas.height = 600;
+  renderSpecimenIntoCanvas(safeIdx, state.sourceCanvas);
+
+  state.specimenIndex = safeIdx;
+  state.specimenLabel = SPECIMENS[safeIdx].label;
+  syncSpecimenUI();
+  onNewSourceReady();
+}
+
+function buildPhotoPopover() {
+  const grid = $('specimenGrid');
+  grid.innerHTML = '';
+  const thumbCanvas = document.createElement('canvas');
+  thumbCanvas.width = 200;
+  thumbCanvas.height = 150;
+
+  for (const sp of SPECIMENS) {
+    renderSpecimenIntoCanvas(sp.id, thumbCanvas);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'specimen-thumb-btn' + (sp.id === state.specimenIndex ? ' is-active' : '');
+    btn.dataset.specimen = String(sp.id);
+    btn.innerHTML =
+      '<img class="specimen-thumb-img" src="' + thumbCanvas.toDataURL('image/png') + '" alt="' + sp.label + '">' +
+      '<span class="specimen-thumb-lbl">' + sp.short + '</span>';
+    btn.addEventListener('click', () => {
+      generateSpecimen(sp.id);
+      togglePhotoPopover(false);
+      showToast('Loaded ' + sp.label);
     });
+    grid.appendChild(btn);
+  }
+}
 
-    // Grid control buttons
-    document.getElementById('clearGrid').addEventListener('click', () => {
-        const currentEffect = document.getElementById('gridEffectType').value;
-        effectStates[currentEffect].fill(false);
-        document.querySelectorAll('.grid-cell').forEach(cell => {
-            cell.classList.remove('active');
-        });
-        redrawWithEffects();
-    });
+function syncSpecimenUI() {
+  document.querySelectorAll('#specimenGrid .specimen-thumb-btn').forEach((card) => {
+    card.classList.toggle('is-active', parseInt(card.dataset.specimen, 10) === state.specimenIndex);
+  });
+  document.querySelectorAll('[data-sp-chk]').forEach((el) => {
+    el.textContent = parseInt(el.dataset.spChk, 10) === state.specimenIndex ? 'Active' : '';
+  });
+}
 
-    document.getElementById('randomGrid').addEventListener('click', () => {
-        const currentEffect = document.getElementById('gridEffectType').value;
-        effectStates[currentEffect].forEach((_, i) => {
-            effectStates[currentEffect][i] = Math.random() > 0.7;
-            const cell = grid.children[i];
-            if (effectStates[currentEffect][i]) {
-                cell.classList.add('active');
-            } else {
-                cell.classList.remove('active');
-            }
-        });
-        redrawWithEffects();
-    });
+function togglePhotoPopover(force) {
+  const willOpen = typeof force === 'boolean' ? force : photoPopover.hidden;
+  closeAllMenus();
+  presetDrawer.hidden = true;
+  photoPopover.hidden = !willOpen;
+  $('openPhotoBtn').setAttribute('aria-expanded', String(willOpen));
+}
 
-    // Modify reset button handler
-    document.getElementById('reset').addEventListener('click', () => {
-        if (!currentImage) return;
-        
-        // Reset all sliders and number inputs to 0
-        Object.values(sliders).forEach(slider => {
-            slider.value = 0;
-            slider.nextElementSibling.value = 0;
-        });
-
-        // Reset all effect states
-        Object.keys(effectStates).forEach(effect => {
-            effectStates[effect].fill(false);
-        });
-        
-        document.querySelectorAll('.grid-cell').forEach(cell => {
-            cell.classList.remove('active');
-        });
-        
-        redrawWithEffects();
-    });
-
-    // Add new button handler
-    document.getElementById('new').addEventListener('click', () => {
-        // Reset all sliders and effects
-        Object.values(sliders).forEach(slider => {
-            slider.value = 0;
-            slider.nextElementSibling.value = 0;
-        });
-
-        // Reset all effect states
-        Object.keys(effectStates).forEach(effect => {
-            effectStates[effect].fill(false);
-        });
-        
-        // Clear grid cells
-        document.querySelectorAll('.grid-cell').forEach(cell => {
-            cell.classList.remove('active');
-        });
-
-        // Clear image and reset UI
-        currentImage = null;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        overlayCtx.clearRect(0, 0, drawingOverlay.width, drawingOverlay.height);
-        
-        // Reset file input
-        photoInput.value = '';
-        
-        // Hide editor and show upload section
-        editor.classList.remove('visible');
-        uploadSection.classList.remove('hidden');
-    });
-
-    // Modify applyGridEffects to apply all active effects
-    function applyGridEffects(data) {
-        if (!currentImage) return;
-        
-        const cellWidth = data.width / GRID_SIZE;
-        const cellHeight = data.height / GRID_SIZE;
-        
-        // Apply each effect type
-        Object.entries(effectStates).forEach(([effectType, state]) => {
-            state.forEach((active, i) => {
-                if (!active) return;
-                
-                const gridX = (i % GRID_SIZE) * cellWidth;
-                const gridY = Math.floor(i / GRID_SIZE) * cellHeight;
-                const centerX = gridX + cellWidth / 2;
-                const centerY = gridY + cellHeight / 2;
-
-                switch(effectType) {
-                    case 'pixelflow':
-                        applyPixelFlowEffect(data, gridX, gridY, cellWidth, cellHeight, centerX, centerY);
-                        break;
-                    case 'vortex':
-                        applyVortexEffect(data, gridX, gridY, cellWidth, cellHeight, centerX, centerY);
-                        break;
-                    case 'shatter':
-                        applyShatterEffect(data, gridX, gridY, cellWidth, cellHeight, centerX, centerY);
-                        break;
-                    case 'ripple':
-                        applyRippleEffect(data, gridX, gridY, cellWidth, cellHeight, centerX, centerY);
-                        break;
-                    case 'neon':
-                        applyNeonEffect(data, gridX, gridY, cellWidth, cellHeight, centerX, centerY);
-                        break;
-                    case 'prism':
-                        applyPrismEffect(data, gridX, gridY, cellWidth, cellHeight, centerX, centerY);
-                        break;
-                }
-            });
-        });
-    }
-
-    function applyPixelFlowEffect(data, startX, startY, width, height, centerX, centerY) {
-        const tempData = new Uint8ClampedArray(data.data.slice(0));
-        const flowStrength = 2.5;
-        const timeOffset = Date.now() / 1000;
-        
-        // Only process pixels within the grid cell
-        for (let y = Math.floor(startY); y < Math.floor(startY + height); y++) {
-            for (let x = Math.floor(startX); x < Math.floor(startX + width); x++) {
-                if (x < 0 || x >= data.width || y < 0 || y >= data.height) continue;
-                
-                const dx = x - centerX;
-                const dy = y - centerY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                const angle = Math.atan2(dy, dx);
-                
-                // Create flowing effect based on distance and time
-                const flow = Math.sin(distance / 10 - timeOffset) * flowStrength;
-                const newX = Math.floor(x + Math.cos(angle) * flow);
-                const newY = Math.floor(y + Math.sin(angle) * flow);
-                
-                // Ensure we stay within the grid cell bounds
-                if (newX >= startX && newX < startX + width && newY >= startY && newY < startY + height) {
-                    const targetIdx = (y * data.width + x) * 4;
-                    const sourceIdx = (newY * data.width + newX) * 4;
-                    
-                    // Only copy if within canvas bounds
-                    if (sourceIdx >= 0 && sourceIdx < data.data.length - 4) {
-                        data.data[targetIdx] = tempData[sourceIdx];
-                        data.data[targetIdx + 1] = tempData[sourceIdx + 1];
-                        data.data[targetIdx + 2] = tempData[sourceIdx + 2];
-                    }
-                }
-            }
-        }
-    }
-
-    function applyVortexEffect(data, startX, startY, width, height, centerX, centerY) {
-        const tempData = new Uint8ClampedArray(data.data.slice(0));
-        const maxRadius = Math.sqrt(width * width + height * height) / 2;
-        const twistFactor = 5.0;
-        
-        // Only process pixels within the grid cell
-        for (let y = Math.floor(startY); y < Math.floor(startY + height); y++) {
-            for (let x = Math.floor(startX); x < Math.floor(startX + width); x++) {
-                if (x < 0 || x >= data.width || y < 0 || y >= data.height) continue;
-                
-                const dx = x - centerX;
-                const dy = y - centerY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                const angle = Math.atan2(dy, dx);
-                
-                // Create spiral warping effect
-                const twist = (maxRadius - distance) / maxRadius * twistFactor;
-                const newAngle = angle + twist;
-                const newX = Math.floor(centerX + Math.cos(newAngle) * distance);
-                const newY = Math.floor(centerY + Math.sin(newAngle) * distance);
-                
-                // Ensure we stay within the grid cell bounds
-                if (newX >= startX && newX < startX + width && newY >= startY && newY < startY + height) {
-                    const targetIdx = (y * data.width + x) * 4;
-                    const sourceIdx = (newY * data.width + newX) * 4;
-                    
-                    // Only copy if within canvas bounds
-                    if (sourceIdx >= 0 && sourceIdx < data.data.length - 4) {
-                        data.data[targetIdx] = tempData[sourceIdx];
-                        data.data[targetIdx + 1] = tempData[sourceIdx + 1];
-                        data.data[targetIdx + 2] = tempData[sourceIdx + 2];
-                    }
-                }
-            }
-        }
-    }
-
-    function applyShatterEffect(data, startX, startY, width, height, centerX, centerY) {
-        const tempData = new Uint8ClampedArray(data.data.slice(0));
-        // Make shards much larger for dramatic impact
-        const shardSize = Math.min(width, height) / 6;
-        const timeOffset = Date.now() / 1000;
-        
-        // Create a fracture pattern
-        const fractures = [];
-        const numFractures = 5;
-        for (let i = 0; i < numFractures; i++) {
-            const angle = (Math.PI * 2 * i / numFractures) + (timeOffset * 0.2);
-            fractures.push({
-                angle: angle,
-                strength: Math.sin(timeOffset + i) * 0.5 + 1.5
-            });
-        }
-        
-        // Only process pixels within the grid cell
-        for (let y = Math.floor(startY); y < Math.floor(startY + height); y += shardSize) {
-            for (let x = Math.floor(startX); x < Math.floor(startX + width); x += shardSize) {
-                if (x < 0 || x >= data.width || y < 0 || y >= data.height) continue;
-                
-                const dx = (x - centerX) / width;
-                const dy = (y - centerY) / height;
-                const baseAngle = Math.atan2(dy, dx);
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                // Calculate fracture influence
-                let maxDisplacement = 0;
-                let dominantAngle = baseAngle;
-                
-                fractures.forEach(fracture => {
-                    const angleDiff = Math.abs(((baseAngle - fracture.angle + Math.PI) % (Math.PI * 2)) - Math.PI);
-                    const fracturePower = (1 - (angleDiff / Math.PI)) * fracture.strength;
-                    if (fracturePower > maxDisplacement) {
-                        maxDisplacement = fracturePower;
-                        dominantAngle = fracture.angle;
-                    }
-                });
-                
-                // Create dramatic displacement
-                const baseDisplacement = 100 * distance * maxDisplacement;
-                const chaos = Math.sin(x * 0.05 + y * 0.05 + timeOffset) * 0.5 + 0.5;
-                const displacement = baseDisplacement * (1 + chaos);
-                
-                // Add glitch-like offset
-                const glitchOffset = Math.floor(Math.sin(timeOffset * 2 + distance * 5) * shardSize * 0.5);
-                const offsetX = Math.cos(dominantAngle) * displacement + glitchOffset;
-                const offsetY = Math.sin(dominantAngle) * displacement;
-                
-                // Apply to entire shard with data bending characteristics
-                for (let sy = 0; sy < shardSize && y + sy < startY + height; sy++) {
-                    for (let sx = 0; sx < shardSize && x + sx < startX + width; sx++) {
-                        // Add shard distortion
-                        const shardProgress = (sx + sy) / (shardSize * 2);
-                        const bendFactor = Math.sin(shardProgress * Math.PI + timeOffset) * 15;
-                        
-                        const sourceX = Math.floor(x + sx + offsetX + bendFactor);
-                        const sourceY = Math.floor(y + sy + offsetY);
-                        
-                        if (sourceX >= startX && sourceX < startX + width && 
-                            sourceY >= startY && sourceY < startY + height) {
-                            const targetIdx = ((y + sy) * data.width + (x + sx)) * 4;
-                            const sourceIdx = (sourceY * data.width + sourceX) * 4;
-                            
-                            if (sourceIdx >= 0 && sourceIdx < data.data.length - 4 && 
-                                targetIdx >= 0 && targetIdx < data.data.length - 4) {
-                                // Add dramatic edge effects
-                                const edgeFactor = Math.max(
-                                    Math.abs(sx - shardSize/2) / (shardSize/2),
-                                    Math.abs(sy - shardSize/2) / (shardSize/2)
-                                );
-                                
-                                // Create data-bending color effects at edges
-                                const intensity = 1 + edgeFactor * 0.8;
-                                const channelShift = Math.floor(edgeFactor * 10) % 3;
-                                
-                                // Apply color channel shifting at edges
-                                data.data[targetIdx] = Math.min(255, tempData[sourceIdx + channelShift] * intensity);
-                                data.data[targetIdx + 1] = Math.min(255, tempData[sourceIdx + ((channelShift + 1) % 3)] * intensity);
-                                data.data[targetIdx + 2] = Math.min(255, tempData[sourceIdx + ((channelShift + 2) % 3)] * intensity);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    function applyRippleEffect(data, startX, startY, width, height, centerX, centerY) {
-        const tempData = new Uint8ClampedArray(data.data.slice(0));
-        const frequency = 0.1;
-        const amplitude = 10;
-        const timeOffset = Date.now() / 1000;
-        
-        // Only process pixels within the grid cell
-        for (let y = Math.floor(startY); y < Math.floor(startY + height); y++) {
-            for (let x = Math.floor(startX); x < Math.floor(startX + width); x++) {
-                if (x < 0 || x >= data.width || y < 0 || y >= data.height) continue;
-                
-                const dx = x - centerX;
-                const dy = y - centerY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                // Create ripple displacement
-                const ripple = Math.sin(distance * frequency - timeOffset) * amplitude;
-                const angle = Math.atan2(dy, dx);
-                const newX = Math.floor(x + Math.cos(angle) * ripple);
-                const newY = Math.floor(y + Math.sin(angle) * ripple);
-                
-                // Ensure we stay within the grid cell bounds
-                if (newX >= startX && newX < startX + width && newY >= startY && newY < startY + height) {
-                    const targetIdx = (y * data.width + x) * 4;
-                    const sourceIdx = (newY * data.width + newX) * 4;
-                    
-                    // Only copy if within canvas bounds
-                    if (sourceIdx >= 0 && sourceIdx < data.data.length - 4) {
-                        data.data[targetIdx] = tempData[sourceIdx];
-                        data.data[targetIdx + 1] = tempData[sourceIdx + 1];
-                        data.data[targetIdx + 2] = tempData[sourceIdx + 2];
-                    }
-                }
-            }
-        }
-    }
-
-    function applyNeonEffect(data, startX, startY, width, height, centerX, centerY) {
-        const tempData = new Uint8ClampedArray(data.data.slice(0));
-        const timeOffset = Date.now() / 1000;
-        
-        // Create a lookup table for the pulse wave to improve performance
-        const pulseIntensity = Math.sin(timeOffset * 3) * 0.3 + 1.2; // Oscillates between 0.9 and 1.5
-        const lookupTable = new Float32Array(256);
-        for (let i = 0; i < 256; i++) {
-            // Create a curve that enhances mid-to-high values more dramatically
-            const normalized = i / 255;
-            const curved = Math.pow(normalized, 0.8); // Adjust gamma for more intense mids
-            lookupTable[i] = Math.min(255, i + (curved * 80 * pulseIntensity));
-        }
-        
-        // Process the image in blocks for better performance
-        const blockSize = 4; // Process 4x4 pixel blocks at a time
-        for (let y = Math.floor(startY); y < Math.floor(startY + height); y += blockSize) {
-            for (let x = Math.floor(startX); x < Math.floor(startX + width); x += blockSize) {
-                if (x < 0 || x >= data.width || y < 0 || y >= data.height) continue;
-                
-                // Calculate distance from center for radial effect
-                const dx = (x - centerX) / width;
-                const dy = (y - centerY) / height;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                const distanceFactor = Math.max(0, 1 - distance * 2);
-                
-                // Process each block
-                for (let by = 0; by < blockSize && y + by < startY + height; by++) {
-                    for (let bx = 0; bx < blockSize && x + bx < startX + width; bx++) {
-                        const px = x + bx;
-                        const py = y + by;
-                        const i = (py * data.width + px) * 4;
-                        
-                        if (i >= 0 && i < data.data.length - 4) {
-                            // Get original color values
-                            const r = tempData[i];
-                            const g = tempData[i + 1];
-                            const b = tempData[i + 2];
-                            
-                            // Calculate luminance
-                            const luminance = (r * 0.299 + g * 0.587 + b * 0.114) / 255;
-                            
-                            // Create "bloom" effect based on luminance
-                            const bloomStr = Math.pow(luminance, 2) * distanceFactor;
-                            
-                            // Calculate color channel bleeding
-                            const timePhase = timeOffset * 4;
-                            const rPhase = Math.sin(timePhase) * 0.5 + 0.5;
-                            const gPhase = Math.sin(timePhase + 2.094) * 0.5 + 0.5;
-                            const bPhase = Math.sin(timePhase + 4.189) * 0.5 + 0.5;
-                            
-                            // Apply neon effect with color bleeding
-                            const neonR = lookupTable[r] + (bloomStr * 50 * rPhase);
-                            const neonG = lookupTable[g] + (bloomStr * 50 * gPhase);
-                            const neonB = lookupTable[b] + (bloomStr * 50 * bPhase);
-                            
-                            // Add edge enhancement
-                            const edgeIntensity = Math.max(
-                                Math.abs(neonR - lookupTable[tempData[i - 4]]) / 255,
-                                Math.abs(neonG - lookupTable[tempData[i - 3]]) / 255,
-                                Math.abs(neonB - lookupTable[tempData[i - 2]]) / 255
-                            ) * pulseIntensity;
-                            
-                            // Combine all effects
-                            data.data[i] = Math.min(255, neonR + edgeIntensity * 50);
-                            data.data[i + 1] = Math.min(255, neonG + edgeIntensity * 50);
-                            data.data[i + 2] = Math.min(255, neonB + edgeIntensity * 50);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    function applyPrismEffect(data, startX, startY, width, height, centerX, centerY) {
-        const tempData = new Uint8ClampedArray(data.data.slice(0));
-        const prismStrength = 15;
-        
-        // Only process pixels within the grid cell
-        for (let y = Math.floor(startY); y < Math.floor(startY + height); y++) {
-            for (let x = Math.floor(startX); x < Math.floor(startX + width); x++) {
-                if (x < 0 || x >= data.width || y < 0 || y >= data.height) continue;
-                
-                const dx = (x - centerX) / width;
-                const dy = (y - centerY) / height;
-                const angle = Math.atan2(dy, dx);
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                // Scale offsets based on distance from center
-                const distanceScale = 1 - (distance / Math.sqrt(width * width + height * height));
-                const scaledStrength = prismStrength * distanceScale;
-                
-                // Create chromatic aberration based on angle
-                const redOffset = scaledStrength * Math.cos(angle + Math.PI / 3);
-                const greenOffset = scaledStrength * Math.cos(angle);
-                const blueOffset = scaledStrength * Math.cos(angle - Math.PI / 3);
-                
-                const targetIdx = (y * data.width + x) * 4;
-                
-                // Sample each color channel from different positions
-                const redX = Math.floor(x + redOffset);
-                const redY = Math.floor(y + redOffset);
-                const greenX = Math.floor(x + greenOffset);
-                const greenY = Math.floor(y + greenOffset);
-                const blueX = Math.floor(x + blueOffset);
-                const blueY = Math.floor(y + blueOffset);
-                
-                // Ensure all sampled positions are within the grid cell bounds
-                if (redX >= startX && redX < startX + width && redY >= startY && redY < startY + height &&
-                    greenX >= startX && greenX < startX + width && greenY >= startY && greenY < startY + height &&
-                    blueX >= startX && blueX < startX + width && blueY >= startY && blueY < startY + height) {
-                    
-                    const redIdx = (redY * data.width + redX) * 4;
-                    const greenIdx = (greenY * data.width + greenX) * 4;
-                    const blueIdx = (blueY * data.width + blueX) * 4;
-                    
-                    // Only copy if all indices are within canvas bounds
-                    if (redIdx >= 0 && redIdx < data.data.length - 4 &&
-                        greenIdx >= 0 && greenIdx < data.data.length - 4 &&
-                        blueIdx >= 0 && blueIdx < data.data.length - 4) {
-                        data.data[targetIdx] = tempData[redIdx];
-                        data.data[targetIdx + 1] = tempData[greenIdx + 1];
-                        data.data[targetIdx + 2] = tempData[blueIdx + 2];
-                    }
-                }
-            }
-        }
-    }
-
-    // Add preset functionality
-    const presets = {
-        glitch: {
-            bitShift: 50,
-            dataOffset: 30,
-            rgbSplit: 20,
-            pixelSort: 128
-        },
-        wave: {
-            bitShift: 0,
-            dataOffset: 70,
-            rgbSplit: 30,
-            pixelSort: 200
-        },
-        dissolve: {
-            bitShift: 20,
-            dataOffset: 50,
-            rgbSplit: 10,
-            pixelSort: 50
-        },
-        chaos: {
-            bitShift: 80,
-            dataOffset: 90,
-            rgbSplit: 40,
-            pixelSort: 255
-        },
-        analog_corrupt: {
-            bitShift: 15,
-            dataOffset: 65,
-            rgbSplit: 25,
-            scanlines: 70,
-            pixelSort: 150
-        },
-        organic: {
-            bitShift: 10,
-            dataOffset: 20,
-            rgbSplit: 15,
-            scanlines: 30,
-            pathSort: 75,
-            seedGrowth: 60,
-            pixelSort: 100
-        },
-
-        audacity_pitch: {
-            bitShift: 30,
-            dataOffset: 80,
-            rgbSplit: 40,
-            scanlines: 0,
-            pathSort: 0,
-            seedGrowth: 0,
-            pixelSort: 200
-        },
-        bass_boost: {
-            bitShift: 60,
-            dataOffset: 40,
-            rgbSplit: 15,
-            scanlines: 40,
-            pathSort: 90,
-            seedGrowth: 0,
-            pixelSort: 180
-        },
-        echo_bend: {
-            bitShift: 25,
-            dataOffset: 100,
-            rgbSplit: 35,
-            scanlines: 20,
-            pathSort: 40,
-            seedGrowth: 30,
-            pixelSort: 160
-        },
-        equalizer: {
-            bitShift: 45,
-            dataOffset: 55,
-            rgbSplit: 25,
-            scanlines: 60,
-            pathSort: 60,
-            seedGrowth: 40,
-            pixelSort: 140
-        },
-        phaser_corrupt: {
-            bitShift: 35,
-            dataOffset: 75,
-            rgbSplit: 45,
-            scanlines: 50,
-            pathSort: 80,
-            seedGrowth: 20,
-            pixelSort: 220
-        },
-        hex_edit: {
-            bitShift: 70,
-            dataOffset: 95,
-            rgbSplit: 50,
-            scanlines: 10,
-            pathSort: 100,
-            seedGrowth: 50,
-            pixelSort: 255
-        }
+function loadUploadedFile(file) {
+  if (!file || !file.type || !file.type.startsWith('image/')) {
+    showToast('Unsupported image file');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxDim = 1280;
+      const w = img.naturalWidth || img.width;
+      const h = img.naturalHeight || img.height;
+      const scale = Math.min(1, maxDim / Math.max(w, h));
+      const pw = Math.max(64, Math.round(w * scale));
+      const ph = Math.max(64, Math.round(h * scale));
+      state.sourceCanvas.width = pw;
+      state.sourceCanvas.height = ph;
+      state.sourceCanvas.getContext('2d', { willReadFrequently: true }).drawImage(img, 0, 0, pw, ph);
+      state.specimenIndex = -1;
+      state.specimenLabel = (file.name || 'Uploaded Photo').replace(/\.[^.]+$/, '').slice(0, 24);
+      syncSpecimenUI();
+      togglePhotoPopover(false);
+      onNewSourceReady();
+      showToast('Loaded ' + state.specimenLabel);
     };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 
-    // Initialize all preset buttons (both default and custom)
-    /**
-     * Initializes the preset buttons and their event handlers
-     * @returns {void}
-     */
-    function initializePresetButtons() {
-        document.querySelectorAll('.preset-btn').forEach(btn => {
-            const presetName = btn.dataset.preset;
-            if (presetName && presets[presetName]) {
-                btn.addEventListener('click', () => {
-                    const preset = presets[presetName];
-                    Object.entries(preset).forEach(([key, value]) => {
-                        if (sliders[key]) {
-                            sliders[key].value = value;
-                            sliders[key].nextElementSibling.value = value;
-                        }
-                    });
-                    redrawWithEffects();
-                });
-            }
-        });
+function onNewSourceReady() {
+  state.previewWidth = state.sourceCanvas.width;
+  state.previewHeight = state.sourceCanvas.height;
+  photoCanvas.width = state.previewWidth;
+  photoCanvas.height = state.previewHeight;
+  originalCanvas.width = state.previewWidth;
+  originalCanvas.height = state.previewHeight;
+  originalCtx.drawImage(state.sourceCanvas, 0, 0);
+
+  $('canvasStatusLbl').textContent = state.specimenLabel + ' - ' + state.previewWidth + ' x ' + state.previewHeight;
+
+  state.hexBytes = null;
+  state.hexBaseBytes = null;
+  state.hexActiveOutput = false;
+  state.hexDecodeFault = false;
+  hexFaultPlate.classList.remove('is-visible');
+  $('hexRepairBanner').hidden = true;
+  stopGifPreview();
+  state.gifFrames = [];
+  state.audioStale = true;
+  if (state.audioPlaying) stopAudioPlayback();
+
+  layoutArtworkFrame();
+  redrawCanvasImmediate();
+
+  if (state.mode === 'hex') captureCanvasToHex();
+  else if (state.mode === 'gif') buildAndPlayGifLoop();
+}
+
+function layoutArtworkFrame() {
+  const rect = canvasCavity.getBoundingClientRect();
+  if (rect.width < 20 || rect.height < 20) return;
+  const cs = getComputedStyle(canvasCavity);
+  const padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+  const padY = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+  const availW = Math.max(100, rect.width - padX);
+  const availH = Math.max(100, rect.height - padY);
+  const aspect = state.previewWidth / Math.max(1, state.previewHeight);
+
+  let dispW = availW;
+  let dispH = dispW / aspect;
+  if (dispH > availH) {
+    dispH = availH;
+    dispW = dispH * aspect;
+  }
+  artworkFrame.style.width = Math.floor(dispW) + 'px';
+  artworkFrame.style.height = Math.floor(dispH) + 'px';
+}
+
+
+function scheduleRender() {
+  if (renderPending) return;
+  renderPending = true;
+  requestAnimationFrame(() => { renderPending = false; redrawCanvasImmediate(); });
+}
+
+function redrawCanvasImmediate() {
+  state.hexActiveOutput = false;
+  hexFaultPlate.classList.remove('is-visible');
+  photoCtx.drawImage(state.sourceCanvas, 0, 0, photoCanvas.width, photoCanvas.height);
+  const imgData = photoCtx.getImageData(0, 0, photoCanvas.width, photoCanvas.height);
+  if (state.eqEnabled) applyClassicEffects(imgData, state.classic);
+  applySpatialGridEffects(imgData, state.gridStates, 1.75);
+  photoCtx.putImageData(imgData, 0, 0);
+  state.audioStale = true;
+  sampleImageHistogram(imgData);
+  updateLcdTicker();
+}
+
+/* ============================================================
+   COBALT LCD SPECTRUM ANALYZER (BARS -> MIRROR -> WAVE)
+   ============================================================ */
+function sampleImageHistogram(imageData) {
+  const d = imageData.data;
+  const bins = new Float32Array(22);
+  const step = Math.max(16, Math.floor(d.length / 2600) * 4);
+  let maxVal = 1;
+  for (let i = 0; i < d.length; i += step) {
+    const lum = (d[i] * 77 + d[i + 1] * 150 + d[i + 2] * 29) >> 8;
+    const b = Math.min(21, Math.floor((lum / 256) * 22));
+    bins[b] += 1;
+    if (bins[b] > maxVal) maxVal = bins[b];
+  }
+  const eqBoost = state.eqEnabled
+    ? (state.classic.bitShift + state.classic.rgbSplit * 2 + state.classic.scanlines) / 300
+    : 0;
+  for (let i = 0; i < 22; i++) {
+    const norm = Math.sqrt(bins[i] / maxVal);
+    const floor = 0.14 + 0.16 * eqBoost * Math.abs(Math.sin(i * 0.65 + 0.4));
+    state.idleBins[i] = Math.min(0.96, Math.max(floor, norm * 0.85 + 0.1));
+  }
+}
+
+let llamaUntil = 0;
+
+function updateLcdTicker() {
+  if (Date.now() < llamaUntil) {
+    $('lcdTicker').textContent = "BENT PIXEL 5 - IT REALLY BENDS THE LLAMA'S PIXELS";
+    return;
+  }
+  if (state.audioPlaying) {
+    $('lcdTicker').textContent = 'Playing Pixel Audio - ' + state.specimenLabel + ' (44 kHz Stereo)';
+    return;
+  }
+  const parts = [];
+  if (state.mode === 'hex' && state.hexBytes) {
+    parts.push('Hex Editor');
+    parts.push(state.hexBytes.length + ' bytes');
+    parts.push(state.hexModifiedSet.size + ' edited');
+  } else if (state.mode === 'gif') {
+    parts.push('GIF Export (' + state.gifMode + ')');
+    parts.push(state.gifFramesCount + ' frames @ ' + state.gifFps + ' FPS');
+  } else if (state.mode === 'grid') {
+    const total = GRID_EFFECTS.reduce((acc, fx) => acc + state.gridStates[fx.key].filter(Boolean).length, 0);
+    parts.push('3x3 Grid');
+    parts.push(total + ' active zones');
+  } else {
+    if (!state.eqEnabled) {
+      parts.push('Effects Bypassed');
+    } else {
+      for (const fx of CLASSIC_EFFECTS) {
+        const v = state.classic[fx.key] | 0;
+        if (v > 0) parts.push(fx.label + ' ' + v);
+      }
+      if (parts.length === 0) parts.push('Flat (No Effects)');
     }
+  }
+  $('lcdTicker').textContent = state.specimenLabel + ' - ' + parts.slice(0, 3).join(', ');
+}
 
-    // Call initialization after DOM content is loaded
-    initializePresetButtons();
+function cycleVisStyle() {
+  const order = ['bars', 'mirror', 'wave'];
+  const labels = { bars: 'Bars', mirror: 'Mirror', wave: 'Wave' };
+  const next = order[(order.indexOf(state.visStyle) + 1) % order.length];
+  state.visStyle = next;
+  $('lcdVisBadge').textContent = labels[next];
+  const flash = $('lcdVisFlash');
+  flash.textContent = labels[next].toUpperCase();
+  flash.classList.add('is-visible');
+  clearTimeout(visFlashTimer);
+  visFlashTimer = setTimeout(() => flash.classList.remove('is-visible'), 950);
+}
 
-    // Track custom presets separately
-    const customPresets = new Set();
+function drawSpectrumFrame() {
+  const w = spectrumCanvas.width;
+  const h = spectrumCanvas.height;
+  const pal = SKIN_SPECTRUM[state.skin] || SKIN_SPECTRUM.silver;
+  specCtx.clearRect(0, 0, w, h);
 
-    // Function to create a new preset button
-    /**
-     * Creates a new preset button with the specified configuration
-     * @param {string} presetName - The name of the preset
-     * @param {Object} preset - The preset configuration object
-     * @param {boolean} [isCustom=false] - Whether this is a custom user preset
-     * @returns {HTMLElement} The created preset button element
-     */
-    function createPresetButton(presetName, preset, isCustom = false) {
-        const btn = document.createElement('button');
-        btn.className = `preset-btn${isCustom ? ' custom-preset' : ''}`;
-        btn.dataset.preset = presetName;
-        
-        if (isCustom) {
-            // Add to custom presets tracking
-            customPresets.add(presetName);
-            
-            // Create a container for the preset name
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = presetName;
-            btn.appendChild(nameSpan);
-            
-            // Create delete button
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'delete-preset';
-            deleteBtn.innerHTML = '×';
-            deleteBtn.title = 'Delete preset';
-            deleteBtn.setAttribute('type', 'button');
-            
-            // Add delete functionality
-            deleteBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (confirm(`Delete preset "${presetName}"?`)) {
-                    delete presets[presetName];
-                    customPresets.delete(presetName);
-                    btn.remove();
-                    
-                    // Hide user presets section if no custom presets remain
-                    const userPresetsSection = document.querySelector('.user-presets');
-                    if (customPresets.size === 0) {
-                        userPresetsSection.classList.remove('visible');
-                    }
-                }
-            });
-            
-            btn.appendChild(deleteBtn);
-        } else {
-            btn.textContent = presetName;
-        }
-        
-        // Add click handler for applying preset
-        btn.addEventListener('click', () => {
-            Object.entries(preset).forEach(([key, value]) => {
-                if (sliders[key]) {
-                    sliders[key].value = value;
-                    sliders[key].nextElementSibling.value = value;
-                }
-            });
-            redrawWithEffects();
-        });
-        
-        return btn;
+  // Subtle dot grid inside LCD
+  specCtx.fillStyle = pal.dot;
+  for (let y = 4; y < h; y += 6) {
+    for (let x = 4; x < w; x += 8) specCtx.fillRect(x, y, 1, 1);
+  }
+
+  const barCount = 22;
+  const levels = new Float32Array(barCount);
+
+  if (state.audioPlaying && state.audioAnalyser && state.audioFreqBuf) {
+    state.audioAnalyser.getByteFrequencyData(state.audioFreqBuf);
+    for (let i = 0; i < barCount; i++) {
+      const bin = Math.min(state.audioFreqBuf.length - 1, Math.floor(i * (state.audioFreqBuf.length / barCount)));
+      levels[i] = Math.max(0.08, state.audioFreqBuf[bin] / 255);
     }
+    if (state.audioBuffer && state.audioCtx) {
+      const elapsed = Math.min(state.audioBuffer.duration, (state.audioCtx.currentTime - state.audioStartCtxTime) + state.audioOffsetSec);
+      $('lcdTimer').textContent = formatMmSs(elapsed);
+      const pct = (elapsed / Math.max(0.1, state.audioBuffer.duration)) * 100;
+      if (audioSeekCtrl) audioSeekCtrl.setVisual(pct);
+      const ph = $('audioPlayhead');
+      if (ph) {
+        ph.style.top = pct.toFixed(2) + '%';
+        ph.classList.add('is-visible');
+      }
+    }
+  } else {
+    const ph = $('audioPlayhead');
+    if (ph) ph.classList.remove('is-visible');
+    state.specPhase += 0.05;
+    const llamaBoost = Date.now() < llamaUntil ? 0.36 : 0;
+    for (let i = 0; i < barCount; i++) {
+      const base = state.idleBins[i] || 0.2;
+      const ripple = Math.sin(state.specPhase * (llamaBoost ? 2.8 : 1) + i * 0.48) * (llamaBoost ? 0.22 : 0.06) + Math.cos(state.specPhase * 0.65 - i * 0.28) * 0.035;
+      levels[i] = Math.max(0.08, Math.min(0.98, base + ripple + llamaBoost * 0.4));
+    }
+  }
 
-    // Add save preset functionality
-    document.getElementById('savePreset').addEventListener('click', () => {
-        const presetName = prompt('Enter a name for your preset:');
-        if (presetName) {
-            const newPreset = {};
-            Object.entries(sliders).forEach(([key, slider]) => {
-                newPreset[key] = parseInt(slider.value);
-            });
-            presets[presetName] = newPreset;
-            
-            // Create and add new preset button
-            const btn = createPresetButton(presetName, newPreset, true);
-            
-            // Show user presets section and add button
-            const userPresetsSection = document.querySelector('.user-presets');
-            const userPresetButtons = document.querySelector('.user-preset-buttons');
-            userPresetsSection.classList.add('visible');
-            userPresetButtons.appendChild(btn);
-        }
+  for (let i = 0; i < barCount; i++) {
+    if (levels[i] >= state.peakVals[i]) state.peakVals[i] = levels[i];
+    else state.peakVals[i] = Math.max(levels[i], state.peakVals[i] - 0.012);
+  }
+
+  if (state.visStyle === 'wave') {
+    // Oscilloscope Waveform Mode
+    specCtx.strokeStyle = pal.wave;
+    specCtx.lineWidth = 1.6;
+    specCtx.beginPath();
+    if (state.audioPlaying && state.audioAnalyser && state.audioTimeBuf) {
+      state.audioAnalyser.getByteTimeDomainData(state.audioTimeBuf);
+      const n = state.audioTimeBuf.length;
+      for (let i = 0; i < n; i++) {
+        const x = (i / (n - 1)) * (w - 8) + 4;
+        const y = ((state.audioTimeBuf[i] - 128) / 128) * (h * 0.42) + h * 0.5;
+        if (i === 0) specCtx.moveTo(x, y); else specCtx.lineTo(x, y);
+      }
+    } else {
+      for (let x = 4; x <= w - 4; x += 2) {
+        const norm = (x - 4) / (w - 8);
+        const idx = Math.min(barCount - 1, Math.floor(norm * barCount));
+        const amp = levels[idx] * (h * 0.36);
+        const y = h * 0.5 + Math.sin(norm * Math.PI * 6 + state.specPhase * 2) * amp;
+        if (x === 4) specCtx.moveTo(x, y); else specCtx.lineTo(x, y);
+      }
+    }
+    specCtx.stroke();
+    specCtx.fillStyle = pal.waveAxis;
+    specCtx.fillRect(4, Math.floor(h * 0.5), w - 8, 1);
+  } else if (state.visStyle === 'mirror') {
+    // Mirrored Stereo Beat Spectrum (winamp-ref-1.jpg)
+    const midX = w * 0.5;
+    const halfCols = 11;
+    const colW = Math.floor((midX - 8) / halfCols);
+    for (let i = 0; i < halfCols; i++) {
+      const lvl = (levels[i * 2] + levels[i * 2 + 1]) * 0.5;
+      const barH = Math.max(4, Math.round(lvl * (h - 10)));
+      const yTop = Math.floor((h - barH) * 0.5);
+      const xL = midX - 4 - (i + 1) * colW;
+      const xR = midX + 4 + i * colW;
+      for (let sy = yTop; sy < yTop + barH; sy += 3) {
+        specCtx.fillStyle = sy < h * 0.32 || sy > h * 0.68 ? pal.mirrorHi : pal.mirrorLo;
+        specCtx.fillRect(xL, sy, Math.max(2, colW - 2), 2);
+        specCtx.fillRect(xR, sy, Math.max(2, colW - 2), 2);
+      }
+    }
+    specCtx.fillStyle = pal.mirrorAxis;
+    specCtx.fillRect(midX - 0.5, 4, 1, h - 8);
+  } else {
+    // Classic Winamp Segmented Pixel Bars (winamp-ref-2.png)
+    const padX = 5;
+    const usableW = w - padX * 2;
+    const slotW = usableW / barCount;
+    const barW = Math.max(3, Math.floor(slotW - 2));
+    const baseY = h - 4;
+    const maxH = h - 9;
+
+    for (let i = 0; i < barCount; i++) {
+      const x = Math.round(padX + i * slotW);
+      const barH = Math.max(3, Math.round(levels[i] * maxH));
+      for (let seg = 0; seg < barH; seg += 3) {
+        const y = baseY - seg - 2;
+        specCtx.fillStyle = (seg / maxH) > 0.72 ? pal.barHi : ((seg / maxH) > 0.38 ? pal.barMid : pal.barLo);
+        specCtx.fillRect(x, y, barW, 2);
+      }
+      const peakY = Math.max(3, baseY - Math.round(state.peakVals[i] * maxH) - 2);
+      specCtx.fillStyle = pal.peak;
+      specCtx.fillRect(x, peakY, barW, 1.5);
+    }
+    specCtx.fillStyle = pal.baseLine;
+    specCtx.fillRect(padX, h - 2.5, usableW, 1);
+  }
+
+  requestAnimationFrame(drawSpectrumFrame);
+}
+
+/* ============================================================
+   TAB 1: EFFECTS (7-BAND VERTICAL WINAMP FADERS + PRESETS)
+   ============================================================ */
+function createVerticalFader(fx) {
+  const col = document.createElement('div');
+  col.className = 'eq-col';
+
+  const valEl = document.createElement('span');
+  valEl.className = 'eq-val';
+
+  const trackArea = document.createElement('div');
+  trackArea.className = 'eq-track-area';
+  trackArea.setAttribute('role', 'slider');
+  trackArea.setAttribute('tabindex', '0');
+  trackArea.setAttribute('aria-label', fx.label);
+  trackArea.setAttribute('aria-valuemin', String(fx.min));
+  trackArea.setAttribute('aria-valuemax', String(fx.max));
+  trackArea.innerHTML =
+    '<div class="eq-groove"><div class="eq-groove-fill"></div></div>' +
+    '<div class="eq-thumb"></div>';
+
+  col.appendChild(valEl);
+  col.appendChild(trackArea);
+
+  let val = state.classic[fx.key] | 0;
+
+  function updateVisual(v) {
+    val = Math.max(fx.min, Math.min(fx.max, Math.round(v)));
+    const ratio = (val - fx.min) / Math.max(1, fx.max - fx.min);
+    trackArea.style.setProperty('--fader-ratio', ratio.toFixed(4));
+    trackArea.style.setProperty('--fader-pct', (ratio * 100).toFixed(2) + '%');
+    trackArea.setAttribute('aria-valuenow', String(val));
+    valEl.textContent = String(val);
+    col.classList.toggle('is-nonzero', val > fx.min);
+  }
+
+  function commitValue(next, recordUndo) {
+    const clamped = Math.max(fx.min, Math.min(fx.max, Math.round(next)));
+    if (clamped === val) return;
+    if (recordUndo) pushUndoSnapshot();
+    updateVisual(clamped);
+    state.classic[fx.key] = clamped;
+    state.activePreset = '';
+    if (!state.eqEnabled && clamped > 0) setEqEnabled(true, false);
+    syncPresetHighlight();
+    scheduleRender();
+  }
+
+  function setFromRatio(ratio, recordUndo) {
+    const clampedRatio = Math.max(0, Math.min(1, ratio));
+    commitValue(fx.min + clampedRatio * (fx.max - fx.min), recordUndo);
+  }
+
+  trackArea.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const step = Math.max(1, Math.round((fx.max - fx.min) / 25));
+    commitValue(val + (e.deltaY < 0 ? step : -step), true);
+    showLearningKey('classic:' + fx.key, true);
+  }, { passive: false });
+
+  trackArea.addEventListener('dblclick', () => commitValue(0, true));
+
+  trackArea.addEventListener('keydown', (e) => {
+    const step = e.shiftKey ? Math.max(1, Math.round((fx.max - fx.min) / 10)) : 1;
+    if (e.key === 'ArrowUp' || e.key === 'ArrowRight') { e.preventDefault(); commitValue(val + step, true); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { e.preventDefault(); commitValue(val - step, true); }
+    else if (e.key === 'Home') { e.preventDefault(); commitValue(fx.min, true); }
+    else if (e.key === 'End') { e.preventDefault(); commitValue(fx.max, true); }
+  });
+
+  bindTip(col, 'classic:' + fx.key);
+
+  updateVisual(val);
+  const api = { col, trackArea, fx, setValue: updateVisual, setFromRatio, getValue: () => val };
+  faderControllers.set(fx.key, api);
+  return api;
+}
+
+function syncBypassUI() {
+  $('bypassBtn').setAttribute('aria-pressed', String(!state.eqEnabled));
+  $('bypassLed').classList.toggle('is-on', state.eqEnabled);
+  $('bypassLabel').textContent = state.eqEnabled ? 'Bypass' : 'Bypassed';
+  $('eqFaderBank').classList.toggle('is-bypassed', !state.eqEnabled);
+}
+
+function setEqEnabled(enabled, recordUndo) {
+  if (recordUndo) pushUndoSnapshot();
+  state.eqEnabled = !!enabled;
+  syncBypassUI();
+  redrawCanvasImmediate();
+}
+
+function initEffectsPanel() {
+  const bank = $('eqFaderBank');
+  const legend = $('eqLegendBar');
+  bank.innerHTML = '';
+  legend.innerHTML = '';
+
+  const faderApis = [];
+  for (const fx of CLASSIC_EFFECTS) {
+    const f = createVerticalFader(fx);
+    faderApis.push(f);
+    bank.appendChild(f.col);
+
+    const legBtn = document.createElement('button');
+    legBtn.type = 'button';
+    legBtn.className = 'eq-legend-btn';
+    legBtn.textContent = fx.label;
+    legBtn.title = fx.label + ' (Double-click to reset to 0)';
+    legBtn.addEventListener('dblclick', () => {
+      if (state.classic[fx.key] === 0) return;
+      pushUndoSnapshot();
+      state.classic[fx.key] = 0;
+      f.setValue(0);
+      state.activePreset = '';
+      syncPresetHighlight();
+      redrawCanvasImmediate();
+    });
+    bindTip(legBtn, 'classic:' + fx.key);
+    legend.appendChild(legBtn);
+  }
+
+  // Paint-Across 7-Band EQ Curve Drawing (interpolates skipped faders + single Undo)
+  let sweepActive = false;
+  let sweepSnapBefore = null;
+  let sweepChanged = false;
+  let lastBandIdx = -1;
+  let lastRatio = 0;
+
+  function resolveBandAndRatio(clientX, clientY) {
+    const bankRect = bank.getBoundingClientRect();
+    const relX = Math.max(0, Math.min(0.9999, (clientX - bankRect.left) / Math.max(1, bankRect.width)));
+    const idx = Math.min(faderApis.length - 1, Math.floor(relX * faderApis.length));
+    const tr = faderApis[idx].trackArea.getBoundingClientRect();
+    const topPad = 11;
+    const usable = Math.max(1, tr.height - topPad * 2);
+    const ratio = Math.max(0, Math.min(1, (tr.bottom - topPad - clientY) / usable));
+    return { idx, ratio };
+  }
+
+  function applySweepPoint(idx, ratio) {
+    if (lastBandIdx === -1 || lastBandIdx === idx) {
+      const before = faderApis[idx].getValue();
+      faderApis[idx].setFromRatio(ratio, false);
+      if (faderApis[idx].getValue() !== before) sweepChanged = true;
+    } else {
+      const step = idx > lastBandIdx ? 1 : -1;
+      const dist = Math.abs(idx - lastBandIdx);
+      for (let s = 1; s <= dist; s++) {
+        const bi = lastBandIdx + step * s;
+        const t = s / dist;
+        const interp = lastRatio + (ratio - lastRatio) * t;
+        const before = faderApis[bi].getValue();
+        faderApis[bi].setFromRatio(interp, false);
+        if (faderApis[bi].getValue() !== before) sweepChanged = true;
+      }
+    }
+    lastBandIdx = idx;
+    lastRatio = ratio;
+    showLearningKey('classic:' + faderApis[idx].fx.key, true);
+  }
+
+  bank.addEventListener('pointerdown', (e) => {
+    if (!e.target.closest('.eq-track-area')) return;
+    e.preventDefault();
+    sweepActive = true;
+    sweepChanged = false;
+    sweepSnapBefore = captureSnapshot();
+    lastBandIdx = -1;
+    try { bank.setPointerCapture(e.pointerId); } catch (_) {}
+    const pt = resolveBandAndRatio(e.clientX, e.clientY);
+    applySweepPoint(pt.idx, pt.ratio);
+  });
+
+  bank.addEventListener('pointermove', (e) => {
+    if (!sweepActive) return;
+    const pt = resolveBandAndRatio(e.clientX, e.clientY);
+    applySweepPoint(pt.idx, pt.ratio);
+  });
+
+  const endSweep = (e) => {
+    if (!sweepActive) return;
+    sweepActive = false;
+    try { bank.releasePointerCapture(e.pointerId); } catch (_) {}
+    if (sweepChanged && sweepSnapBefore) {
+      state.undoStack.push(sweepSnapBefore);
+      if (state.undoStack.length > MAX_HISTORY) state.undoStack.shift();
+      state.redoStack = [];
+      syncUndoRedoUI();
+    }
+    sweepSnapBefore = null;
+    lastBandIdx = -1;
+  };
+  bank.addEventListener('pointerup', endSweep);
+  bank.addEventListener('pointercancel', endSweep);
+
+  $('copyPresetLinkBtn').addEventListener('click', copyShareableEqLink);
+
+  $('presetsBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const willOpen = presetDrawer.hidden;
+    closeAllMenus();
+    photoPopover.hidden = true;
+    presetDrawer.hidden = !willOpen;
+    $('presetsBtn').setAttribute('aria-expanded', String(willOpen));
+  });
+  $('presetDrawerClose').addEventListener('click', () => {
+    presetDrawer.hidden = true;
+    $('presetsBtn').setAttribute('aria-expanded', 'false');
+  });
+
+  $('shuffleBtn').addEventListener('click', shuffleClassicEffects);
+  $('resetEffectsBtn').addEventListener('click', resetClassicFaders);
+  $('bypassBtn').addEventListener('click', () => setEqEnabled(!state.eqEnabled, true));
+
+  bindTip($('presetsBtn'), 'btn:presets');
+  bindTip($('shuffleBtn'), 'btn:shuffle');
+  bindTip($('resetEffectsBtn'), 'btn:resetFx');
+  bindTip($('bypassBtn'), 'btn:bypass');
+
+  // Build 12 built-in presets inside classic Winamp drawer
+  const pList = $('defaultPresetList');
+  pList.innerHTML = '';
+  for (const [key, def] of Object.entries(DEFAULT_PRESETS)) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'preset-row-btn';
+    btn.dataset.preset = key;
+    btn.textContent = def.label;
+    btn.addEventListener('click', () => {
+      applyPresetValues(def.values, key);
+      presetDrawer.hidden = true;
+      $('presetsBtn').setAttribute('aria-expanded', 'false');
+      showToast('Preset: ' + def.label);
+    });
+    bindTip(btn, 'preset:' + key);
+    pList.appendChild(btn);
+  }
+
+  loadUserPresets();
+  renderUserPresets();
+
+  $('savePresetForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const inp = $('customPresetInput');
+    const raw = (inp.value || '').trim();
+    const name = raw || ('Custom ' + (Object.keys(state.userPresets).length + 1));
+    const snap = {};
+    for (const fx of CLASSIC_EFFECTS) snap[fx.key] = state.classic[fx.key] | 0;
+    state.userPresets[name] = snap;
+    saveUserPresets();
+    renderUserPresets();
+    inp.value = '';
+    state.activePreset = 'user:' + name;
+    syncPresetHighlight();
+    showToast('Saved preset "' + name + '"');
+  });
+}
+
+function shuffleClassicEffects() {
+  pushUndoSnapshot();
+  if (!state.eqEnabled) { state.eqEnabled = true; syncBypassUI(); }
+  for (const fx of CLASSIC_EFFECTS) {
+    const v = Math.floor(Math.random() * (fx.max + 1));
+    state.classic[fx.key] = v;
+    const c = faderControllers.get(fx.key);
+    if (c) c.setValue(v);
+  }
+  state.activePreset = '';
+  syncPresetHighlight();
+  redrawCanvasImmediate();
+  showToast('Shuffled effects');
+}
+
+function resetClassicFaders() {
+  pushUndoSnapshot();
+  for (const fx of CLASSIC_EFFECTS) {
+    state.classic[fx.key] = 0;
+    const c = faderControllers.get(fx.key);
+    if (c) c.setValue(0);
+  }
+  state.activePreset = '';
+  syncPresetHighlight();
+  redrawCanvasImmediate();
+  showToast('Effects reset');
+}
+
+function applyPresetValues(values, key) {
+  pushUndoSnapshot();
+  if (!state.eqEnabled) { state.eqEnabled = true; syncBypassUI(); }
+  for (const fx of CLASSIC_EFFECTS) {
+    const v = Object.prototype.hasOwnProperty.call(values, fx.key) ? (values[fx.key] | 0) : 0;
+    const clamped = Math.max(fx.min, Math.min(fx.max, v));
+    state.classic[fx.key] = clamped;
+    const c = faderControllers.get(fx.key);
+    if (c) c.setValue(clamped);
+  }
+  state.activePreset = key || '';
+  syncPresetHighlight();
+  redrawCanvasImmediate();
+}
+
+function syncPresetHighlight() {
+  document.querySelectorAll('#defaultPresetList .preset-row-btn').forEach((btn) => {
+    btn.classList.toggle('is-active', btn.dataset.preset === state.activePreset);
+  });
+}
+
+function loadUserPresets() {
+  try {
+    const raw = localStorage.getItem(STORAGE_PRESETS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') state.userPresets = parsed;
+    }
+  } catch (_) { state.userPresets = {}; }
+}
+
+function saveUserPresets() {
+  try { localStorage.setItem(STORAGE_PRESETS_KEY, JSON.stringify(state.userPresets)); } catch (_) {}
+}
+
+function renderUserPresets() {
+  const list = $('userPresetsList');
+  list.innerHTML = '';
+  for (const name of Object.keys(state.userPresets)) {
+    const row = document.createElement('div');
+    row.className = 'user-preset-item';
+
+    const applyBtn = document.createElement('button');
+    applyBtn.type = 'button';
+    applyBtn.className = 'preset-row-btn';
+    applyBtn.textContent = name;
+    applyBtn.addEventListener('click', () => {
+      applyPresetValues(state.userPresets[name], 'user:' + name);
+      presetDrawer.hidden = true;
+      $('presetsBtn').setAttribute('aria-expanded', 'false');
+      showToast('Loaded "' + name + '"');
     });
 
-    // Audio Context and buffers
-    let audioContext;
-    let audioBuffer;
-    let audioSource;
-    let isPlaying = false;
-    let startTime = 0;
-    let progressInterval;
-    let gainNode;
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'user-preset-del';
+    delBtn.textContent = '\u00D7';
+    delBtn.title = 'Delete ' + name;
+    delBtn.addEventListener('click', () => {
+      delete state.userPresets[name];
+      saveUserPresets();
+      renderUserPresets();
+      showToast('Deleted "' + name + '"');
+    });
 
-    // Initialize Audio Context
-    /**
-     * Initializes the Web Audio API context
-     * @returns {void}
-     */
-    function initAudioContext() {
-        if (!audioContext) {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            gainNode = audioContext.createGain();
-            gainNode.connect(audioContext.destination);
+    row.appendChild(applyBtn);
+    row.appendChild(delBtn);
+    list.appendChild(row);
+  }
+}
+
+/* ============================================================
+   TAB 2: 3x3 GRID (DIRECT CANVAS PAINTING + 6 BEVELED PADS)
+   ============================================================ */
+function initGridPanel() {
+  const pads = $('gridPads');
+  pads.innerHTML = '';
+
+  for (const fx of GRID_EFFECTS) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'grid-pad' + (fx.key === state.activeGridEffect ? ' is-active' : '');
+    btn.dataset.gridFx = fx.key;
+    btn.innerHTML =
+      '<span class="grid-pad-top"><span class="wa-led"></span><span class="grid-pad-count" data-cnt="' + fx.key + '">0 of 9</span></span>' +
+      '<span class="grid-pad-name">' + fx.name + '</span>';
+    btn.addEventListener('click', () => {
+      state.activeGridEffect = fx.key;
+      syncGridUI();
+      updateLcdTicker();
+    });
+    bindTip(btn, 'grid:' + fx.key);
+    pads.appendChild(btn);
+  }
+
+  gridOverlay.innerHTML = '';
+  let paintVal = null;
+  window.addEventListener('pointerup', () => { paintVal = null; });
+
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'grid-cell';
+    cell.dataset.cellIdx = String(i);
+    cell.innerHTML = '<span class="cell-coord">' + CELL_COORDS[i] + '</span><span class="cell-pip"></span>';
+    cell.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      pushUndoSnapshot();
+      const fx = state.activeGridEffect;
+      const next = !state.gridStates[fx][i];
+      paintVal = next;
+      setGridCell(fx, i, next);
+    });
+    cell.addEventListener('pointerenter', () => {
+      if (paintVal !== null) setGridCell(state.activeGridEffect, i, paintVal);
+    });
+    gridOverlay.appendChild(cell);
+  }
+
+  $('gridClearZoneBtn').addEventListener('click', () => {
+    pushUndoSnapshot();
+    state.gridStates[state.activeGridEffect].fill(false);
+    syncGridUI();
+    redrawCanvasImmediate();
+  });
+
+  $('gridClearAllBtn').addEventListener('click', () => {
+    pushUndoSnapshot();
+    for (const fx of GRID_EFFECTS) state.gridStates[fx.key].fill(false);
+    syncGridUI();
+    redrawCanvasImmediate();
+    showToast('Cleared all grid layers');
+  });
+
+  $('gridRandomBtn').addEventListener('click', () => {
+    pushUndoSnapshot();
+    const fx = state.activeGridEffect;
+    let any = false;
+    for (let i = 0; i < 9; i++) {
+      const on = Math.random() > 0.62;
+      state.gridStates[fx][i] = on;
+      if (on) any = true;
+    }
+    if (!any) state.gridStates[fx][Math.floor(Math.random() * 9)] = true;
+    syncGridUI();
+    redrawCanvasImmediate();
+  });
+
+  bindTip($('gridClearZoneBtn'), 'btn:gridClear');
+  bindTip($('gridClearAllBtn'), 'btn:gridClear');
+  bindTip($('gridRandomBtn'), 'btn:gridRand');
+
+  syncGridUI();
+}
+
+function setGridCell(fxKey, idx, val) {
+  if (state.gridStates[fxKey][idx] === val) return;
+  state.gridStates[fxKey][idx] = val;
+  syncGridUI();
+  scheduleRender();
+}
+
+function syncGridUI() {
+  let activeCount = 0;
+  document.querySelectorAll('#gridPads .grid-pad').forEach((btn) => {
+    const k = btn.dataset.gridFx;
+    const count = state.gridStates[k].filter(Boolean).length;
+    if (k === state.activeGridEffect) activeCount = count;
+    const isSelected = k === state.activeGridEffect;
+    btn.classList.toggle('is-active', isSelected);
+    btn.querySelector('[data-cnt]').textContent = count + ' of 9';
+    const led = btn.querySelector('.wa-led');
+    if (led) {
+      led.classList.toggle('is-on', isSelected || count > 0);
+      led.classList.toggle('is-amber', !isSelected && count > 0);
+    }
+  });
+  $('gridTotalCount').textContent = activeCount + ' of 9';
+
+  const cells = gridOverlay.children;
+  for (let i = 0; i < 9; i++) {
+    const activeHere = state.gridStates[state.activeGridEffect][i];
+    let anyOther = false;
+    for (const fx of GRID_EFFECTS) {
+      if (fx.key !== state.activeGridEffect && state.gridStates[fx.key][i]) { anyOther = true; break; }
+    }
+    if (cells[i]) {
+      cells[i].classList.toggle('is-active', activeHere);
+      cells[i].classList.toggle('has-other', anyOther);
+    }
+  }
+}
+
+
+function captureCanvasToHex() {
+  if (state.hexDecodeFault) redrawCanvasImmediate();
+  const bytes = canvasToJpegBytes(photoCanvas, state.hexQuality);
+  const parsed = parseJpegStructure(bytes);
+  state.hexBaseBytes = new Uint8Array(bytes);
+  state.hexBytes = new Uint8Array(bytes);
+  state.hexSegments = parsed.segments;
+  state.hexScanStart = parsed.scanStart;
+  state.hexScanEnd = parsed.scanEnd;
+  state.hexModifiedSet.clear();
+  state.hexDecodeFault = false;
+  state.hexActiveOutput = false;
+  hexFaultPlate.classList.remove('is-visible');
+  $('hexRepairBanner').hidden = true;
+
+  state.hexSelectedIdx = Math.min(bytes.length - 1, parsed.scanStart);
+  const pageSize = getHexPageSize();
+  state.hexPage = parsed.scanStart < pageSize ? 0 : Math.floor(state.hexSelectedIdx / pageSize);
+  renderHexSheet();
+  syncHexLockUI();
+  updateLcdTicker();
+}
+
+function recomputeHexModifiedSet() {
+  state.hexModifiedSet.clear();
+  if (!state.hexBytes || !state.hexBaseBytes) return;
+  const len = Math.min(state.hexBytes.length, state.hexBaseBytes.length);
+  for (let i = 0; i < len; i++) {
+    if (state.hexBytes[i] !== state.hexBaseBytes[i]) state.hexModifiedSet.add(i);
+  }
+}
+
+function isByteEditable(idx) {
+  if (!state.hexBytes || idx < 0 || idx >= state.hexBytes.length) return false;
+  if (!state.hexHeaderLocked) return true;
+  return idx >= state.hexScanStart && idx < state.hexScanEnd;
+}
+
+function writeSingleHexByte(idx, val) {
+  if (!state.hexBytes || idx < 0 || idx >= state.hexBytes.length) return false;
+  if (!isByteEditable(idx)) { showToast('Header Lock is ON'); return false; }
+  const clean = val & 0xFF;
+  if (state.hexBytes[idx] === clean) return true;
+  pushUndoSnapshot();
+  state.hexBytes[idx] = clean;
+  if (state.hexBaseBytes && state.hexBaseBytes[idx] !== clean) state.hexModifiedSet.add(idx);
+  else state.hexModifiedSet.delete(idx);
+  decodeHexBytesToCanvas();
+  renderHexSheet();
+  updateLcdTicker();
+  return true;
+}
+
+function decodeHexBytesToCanvas() {
+  if (!state.hexBytes) return;
+  const blob = new Blob([state.hexBytes], { type: 'image/jpeg' });
+  const url = URL.createObjectURL(blob);
+  if (state.hexLastObjectUrl) URL.revokeObjectURL(state.hexLastObjectUrl);
+  state.hexLastObjectUrl = url;
+
+  const img = new Image();
+  img.onload = () => {
+    state.hexDecodeFault = false;
+    state.hexActiveOutput = true;
+    hexFaultPlate.classList.remove('is-visible');
+    $('hexRepairBanner').hidden = true;
+    photoCtx.drawImage(img, 0, 0, photoCanvas.width, photoCanvas.height);
+    state.audioStale = true;
+    sampleImageHistogram(photoCtx.getImageData(0, 0, photoCanvas.width, photoCanvas.height));
+  };
+  img.onerror = () => {
+    state.hexDecodeFault = true;
+    hexFaultPlate.classList.add('is-visible');
+    $('hexRepairBanner').hidden = false;
+  };
+  img.src = url;
+}
+
+function isMarkerSafeAt(bytes, idx) {
+  if (!state.hexHeaderLocked) return true;
+  if (bytes[idx] === 0xFF) return false;
+  if (idx > 0 && bytes[idx - 1] === 0xFF) return false;
+  return true;
+}
+
+function runHexOperator(op) {
+  if (!state.hexBytes) captureCanvasToHex();
+  const bytes = state.hexBytes;
+  const start = state.hexHeaderLocked ? Math.min(bytes.length - 1, state.hexScanStart + 4) : 0;
+  const end = state.hexHeaderLocked ? Math.max(start + 1, state.hexScanEnd - 4) : bytes.length;
+  const span = end - start;
+  if (span < 8) return;
+
+  pushUndoSnapshot();
+  let firstTouch = start;
+
+  if (op === 'transpose') {
+    const chunkLen = Math.max(8, Math.min(Math.floor(span / 6), 36));
+    const a = start + Math.floor(Math.random() * Math.max(1, span - chunkLen * 2));
+    const b = start + Math.floor(Math.random() * Math.max(1, span - chunkLen));
+    firstTouch = a;
+    for (let k = 0; k < chunkLen; k++) {
+      if (isMarkerSafeAt(bytes, a + k) && isMarkerSafeAt(bytes, b + k)) {
+        const tmp = bytes[a + k]; bytes[a + k] = bytes[b + k]; bytes[b + k] = tmp;
+      }
+    }
+  } else if (op === 'invert') {
+    const count = 12;
+    const pos = start + Math.floor(Math.random() * Math.max(1, span - count));
+    firstTouch = pos;
+    for (let k = 0; k < count; k++) {
+      const idx = pos + k;
+      if (idx < end && isMarkerSafeAt(bytes, idx)) {
+        let v = (bytes[idx] ^ 0xFF) & 0xFF;
+        if (state.hexHeaderLocked && v === 0xFF) v = 0xFE;
+        bytes[idx] = v;
+      }
+    }
+  } else if (op === 'smear') {
+    const patLen = 5, total = Math.min(span - 4, 80);
+    const pos = start + Math.floor(Math.random() * Math.max(1, span - total));
+    firstTouch = pos;
+    const pat = [];
+    for (let p = 0; p < patLen; p++) {
+      let v = bytes[pos + p];
+      if (state.hexHeaderLocked && v === 0xFF) v = 0x7E;
+      pat.push(v);
+    }
+    for (let k = 0; k < total; k++) {
+      const idx = pos + k;
+      if (isMarkerSafeAt(bytes, idx)) bytes[idx] = pat[k % patLen];
+    }
+  }
+
+  recomputeHexModifiedSet();
+  state.hexSelectedIdx = firstTouch;
+  state.hexPage = Math.floor(firstTouch / getHexPageSize());
+  decodeHexBytesToCanvas();
+  renderHexSheet();
+  const selCell = $('hexRows').querySelector('.hx-b.is-sel');
+  if (selCell) selCell.scrollIntoView({ block: 'center' });
+  updateLcdTicker();
+}
+
+function repairHexHeader() {
+  if (!state.hexBytes || !state.hexBaseBytes) return;
+  pushUndoSnapshot();
+  for (let i = 0; i < state.hexScanStart && i < state.hexBytes.length; i++) state.hexBytes[i] = state.hexBaseBytes[i];
+  for (let i = state.hexScanEnd; i < state.hexBytes.length; i++) state.hexBytes[i] = state.hexBaseBytes[i];
+  for (let i = state.hexScanStart; i < state.hexScanEnd - 1; i++) {
+    if (state.hexBytes[i] === 0xFF && state.hexBaseBytes[i] !== 0xFF) state.hexBytes[i] = 0xFE;
+  }
+  recomputeHexModifiedSet();
+  decodeHexBytesToCanvas();
+  renderHexSheet();
+  updateLcdTicker();
+  showToast('JPEG header repaired');
+}
+
+function resetHexStream() {
+  if (!state.hexBaseBytes) return;
+  pushUndoSnapshot();
+  state.hexBytes = new Uint8Array(state.hexBaseBytes);
+  state.hexModifiedSet.clear();
+  decodeHexBytesToCanvas();
+  renderHexSheet();
+  updateLcdTicker();
+  showToast('Hex bytes reset');
+}
+
+function syncHexLockUI() {
+  const btn = $('hexLockBtn');
+  const led = $('hexLockLed');
+  btn.setAttribute('aria-pressed', String(state.hexHeaderLocked));
+  led.classList.toggle('is-on', state.hexHeaderLocked);
+  led.classList.toggle('is-amber', !state.hexHeaderLocked);
+  $('hexLockLabel').textContent = state.hexHeaderLocked ? 'Header Lock: ON' : 'Header Lock: OFF';
+}
+
+function renderHexSheet() {
+  const rowsEl = $('hexRows');
+  const cols = getHexCols();
+  const pageSize = cols * HEX_ROWS_PER_PAGE;
+  state.lastHexCols = cols;
+
+  const frameEl = $('hexSheetFrame');
+  if (frameEl) frameEl.classList.toggle('is-cols-4', cols === 4);
+  const colHeadEl = $('hexColBytes');
+  if (colHeadEl && colHeadEl.children.length !== cols) {
+    let html = '';
+    for (let c = 0; c < cols; c++) html += '<span>0' + c + '</span>';
+    colHeadEl.innerHTML = html;
+  }
+
+  if (!state.hexBytes) { rowsEl.innerHTML = ''; return; }
+  const bytes = state.hexBytes;
+  const totalPages = Math.max(1, Math.ceil(bytes.length / pageSize));
+  state.hexPage = Math.max(0, Math.min(totalPages - 1, state.hexPage));
+  const startByte = state.hexPage * pageSize;
+  const endByte = Math.min(bytes.length, startByte + pageSize);
+
+  const frag = document.createDocumentFragment();
+  for (let rowOff = startByte; rowOff < endByte; rowOff += cols) {
+    const row = document.createElement('div');
+    row.className = 'hex-row';
+
+    const off = document.createElement('span');
+    off.className = 'hex-off';
+    off.textContent = rowOff.toString(16).toUpperCase().padStart(6, '0');
+    row.appendChild(off);
+
+    const cells = document.createElement('div');
+    cells.className = 'hex-cells';
+    let ascii = '';
+
+    for (let c = 0; c < cols; c++) {
+      const idx = rowOff + c;
+      const cell = document.createElement('span');
+      if (idx < bytes.length) {
+        const val = bytes[idx];
+        const isProtected = idx < state.hexScanStart || idx >= state.hexScanEnd;
+        let cls = 'hx-b';
+        if (isProtected) cls += ' is-protected';
+        if (state.hexModifiedSet.has(idx)) cls += ' is-mod';
+        if (idx === state.hexSelectedIdx) cls += ' is-sel';
+        cell.className = cls;
+        cell.dataset.idx = String(idx);
+        cell.textContent = (idx === state.hexSelectedIdx && state.hexEditNibble)
+          ? (state.hexEditNibble + '_')
+          : val.toString(16).toUpperCase().padStart(2, '0');
+        ascii += (val >= 32 && val <= 126) ? String.fromCharCode(val) : '.';
+      } else {
+        cell.className = 'hx-b';
+        cell.textContent = '  ';
+        ascii += ' ';
+      }
+      cells.appendChild(cell);
+    }
+    row.appendChild(cells);
+
+    const asc = document.createElement('span');
+    asc.className = 'hex-ascii';
+    asc.textContent = ascii;
+    row.appendChild(asc);
+
+    frag.appendChild(row);
+  }
+
+  rowsEl.innerHTML = '';
+  rowsEl.appendChild(frag);
+
+  $('hexPageNum').textContent = (state.hexPage + 1) + '/' + totalPages;
+  $('hexPrevPage').disabled = state.hexPage <= 0;
+  $('hexNextPage').disabled = state.hexPage >= totalPages - 1;
+
+  const selIdx = Math.max(0, Math.min(bytes.length - 1, state.hexSelectedIdx));
+  $('hexSelAddr').textContent = '0x' + selIdx.toString(16).toUpperCase().padStart(4, '0');
+  const byteInput = $('hexByteInput');
+  if (document.activeElement !== byteInput) {
+    byteInput.value = bytes[selIdx].toString(16).toUpperCase().padStart(2, '0');
+  }
+}
+
+function stepHexSelection(delta) {
+  if (!state.hexBytes) return;
+  state.hexSelectedIdx = Math.max(0, Math.min(state.hexBytes.length - 1, state.hexSelectedIdx + delta));
+  state.hexPage = Math.floor(state.hexSelectedIdx / getHexPageSize());
+  state.hexEditNibble = '';
+  renderHexSheet();
+  showHexByteNote(state.hexSelectedIdx, true);
+}
+
+function initHexPanel() {
+  $('hexLockBtn').addEventListener('click', () => {
+    state.hexHeaderLocked = !state.hexHeaderLocked;
+    syncHexLockUI();
+    showToast(state.hexHeaderLocked ? 'Header Lock ON' : 'Header Lock OFF');
+  });
+
+  $('hexTransposeBtn').addEventListener('click', () => runHexOperator('transpose'));
+  $('hexInvertBtn').addEventListener('click', () => runHexOperator('invert'));
+  $('hexSmearBtn').addEventListener('click', () => runHexOperator('smear'));
+  $('hexResetBtn').addEventListener('click', resetHexStream);
+  $('hexRepairBanner').addEventListener('click', repairHexHeader);
+  $('faultRepairBtn').addEventListener('click', repairHexHeader);
+  $('faultUndoBtn').addEventListener('click', performUndo);
+
+  bindTip($('hexLockBtn'), 'hex:lock');
+  bindTip($('hexTransposeBtn'), 'hex:transpose');
+  bindTip($('hexInvertBtn'), 'hex:invert');
+  bindTip($('hexSmearBtn'), 'hex:smear');
+  bindTip($('hexResetBtn'), 'hex:reset');
+  bindTip($('hexRepairBanner'), 'hex:repair');
+
+  const rowsEl = $('hexRows');
+  rowsEl.addEventListener('click', (e) => {
+    const cell = e.target.closest('.hx-b[data-idx]');
+    if (!cell) return;
+    state.hexSelectedIdx = parseInt(cell.dataset.idx, 10);
+    state.hexEditNibble = '';
+    renderHexSheet();
+    showHexByteNote(state.hexSelectedIdx, true);
+    rowsEl.focus();
+  });
+
+  let lastHoverIdx = -1;
+  rowsEl.addEventListener('mousemove', (e) => {
+    const cell = e.target.closest('.hx-b[data-idx]');
+    if (!cell || !state.hexBytes) { hexScanline.classList.remove('is-visible'); return; }
+    const idx = parseInt(cell.dataset.idx, 10);
+    if (idx !== lastHoverIdx) { lastHoverIdx = idx; showHexByteNote(idx, false); }
+    if (idx >= state.hexScanStart && idx < state.hexScanEnd) {
+      const ratio = (idx - state.hexScanStart) / Math.max(1, state.hexScanEnd - state.hexScanStart);
+      hexScanline.style.top = (ratio * 100).toFixed(2) + '%';
+      hexScanline.classList.add('is-visible');
+    } else {
+      hexScanline.classList.remove('is-visible');
+    }
+  });
+
+  rowsEl.addEventListener('mouseleave', () => {
+    lastHoverIdx = -1;
+    hexScanline.classList.remove('is-visible');
+    resetLearningDeferred();
+  });
+
+  rowsEl.addEventListener('keydown', (e) => {
+    if (!state.hexBytes) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); stepHexSelection(1); return; }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); stepHexSelection(-1); return; }
+    if (e.key === 'ArrowDown')  { e.preventDefault(); stepHexSelection(getHexCols()); return; }
+    if (e.key === 'ArrowUp')    { e.preventDefault(); stepHexSelection(-getHexCols()); return; }
+    if (e.key === 'Escape')     { state.hexEditNibble = ''; renderHexSheet(); return; }
+
+    if (/^[0-9a-fA-F]$/.test(e.key)) {
+      e.preventDefault();
+      if (!isByteEditable(state.hexSelectedIdx)) { showToast('Header Lock is ON'); return; }
+      const ch = e.key.toUpperCase();
+      if (!state.hexEditNibble) { state.hexEditNibble = ch; renderHexSheet(); }
+      else {
+        const val = parseInt(state.hexEditNibble + ch, 16);
+        state.hexEditNibble = '';
+        const idx = state.hexSelectedIdx;
+        if (writeSingleHexByte(idx, val) && idx + 1 < state.hexBytes.length) stepHexSelection(1);
+      }
+    }
+  });
+
+  const byteInput = $('hexByteInput');
+  const commitByte = () => {
+    const raw = (byteInput.value || '').trim();
+    if (/^[0-9a-fA-F]{1,2}$/.test(raw)) writeSingleHexByte(state.hexSelectedIdx, parseInt(raw, 16));
+    else showToast('Enter a hex byte from 00 to FF');
+  };
+  $('hexApplyBtn').addEventListener('click', commitByte);
+  byteInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); commitByte(); } });
+
+  $('hexPrevPage').addEventListener('click', () => { state.hexPage = Math.max(0, state.hexPage - 1); renderHexSheet(); });
+  $('hexNextPage').addEventListener('click', () => { state.hexPage++; renderHexSheet(); });
+}
+
+/* ============================================================
+   REUSABLE HORIZONTAL WINAMP METALLIC GROOVE SLIDER
+   ============================================================ */
+function bindHorizontalGroove(el, cfg) {
+  let val = cfg.value;
+  function setVisual(v) {
+    val = Math.max(cfg.min, Math.min(cfg.max, cfg.step ? Math.round(v / cfg.step) * cfg.step : v));
+    const ratio = (val - cfg.min) / Math.max(0.0001, cfg.max - cfg.min);
+    const pct = ratio * 100;
+    el.style.setProperty('--val-pct', pct.toFixed(2) + '%');
+    el.style.setProperty('--val-ratio', ratio.toFixed(4));
+    el.setAttribute('aria-valuenow', String(Math.round(val)));
+    if (cfg.onVisual) cfg.onVisual(val, pct);
+  }
+
+  function updateFromX(clientX) {
+    const r = el.getBoundingClientRect();
+    if (r.width <= 0) return;
+    const ratio = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+    const next = cfg.min + ratio * (cfg.max - cfg.min);
+    const rounded = cfg.step ? Math.round(next / cfg.step) * cfg.step : next;
+    if (rounded !== val || cfg.alwaysFire) {
+      setVisual(rounded);
+      if (cfg.onChange) cfg.onChange(val);
+    }
+  }
+
+  let dragging = false;
+  el.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    try { el.setPointerCapture(e.pointerId); } catch (_) {}
+    updateFromX(e.clientX);
+  });
+  el.addEventListener('pointermove', (e) => { if (dragging) updateFromX(e.clientX); });
+  const stop = (e) => {
+    if (!dragging) return;
+    dragging = false;
+    try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+    if (cfg.onCommit) cfg.onCommit(val);
+  };
+  el.addEventListener('pointerup', stop);
+  el.addEventListener('pointercancel', stop);
+
+  el.addEventListener('keydown', (e) => {
+    const st = cfg.step || 1;
+    let next = val;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next += st;
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next -= st;
+    else if (e.key === 'Home') next = cfg.min;
+    else if (e.key === 'End') next = cfg.max;
+    else return;
+    e.preventDefault();
+    next = Math.max(cfg.min, Math.min(cfg.max, next));
+    if (next !== val) {
+      setVisual(next);
+      if (cfg.onChange) cfg.onChange(val);
+      if (cfg.onCommit) cfg.onCommit(val);
+    }
+  });
+
+  setVisual(val);
+  return { setVisual, getValue: () => val };
+}
+
+/* ============================================================
+   TAB 4: GIF EXPORT PANEL
+   ============================================================ */
+function initGifPanel() {
+  bindHorizontalGroove($('gifFramesGroove'), {
+    min: 6, max: 20, step: 1, value: state.gifFramesCount,
+    onVisual(v) { $('gifFramesVal').textContent = String(v); },
+    onChange(v) {
+      state.gifFramesCount = v;
+      $('gifLcdStatus').textContent = v + ' frames at ' + state.gifFps + ' FPS';
+      updateLcdTicker();
+    },
+    onCommit() { if (state.mode === 'gif') buildAndPlayGifLoop(); }
+  });
+
+  bindHorizontalGroove($('gifFpsGroove'), {
+    min: 4, max: 20, step: 1, value: state.gifFps,
+    onVisual(v) { $('gifFpsVal').textContent = v + ' FPS'; },
+    onChange(v) {
+      state.gifFps = v;
+      $('gifLcdStatus').textContent = state.gifFramesCount + ' frames at ' + v + ' FPS';
+      updateLcdTicker();
+      if (state.gifPlaying) startGifPreview();
+    }
+  });
+
+  bindTip($('gifFramesRow'), 'gif:frames');
+  bindTip($('gifFpsRow'), 'gif:fps');
+
+  document.querySelectorAll('#gifModes .gif-mode-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      state.gifMode = btn.dataset.gifMode;
+      document.querySelectorAll('#gifModes .gif-mode-btn').forEach((b) => {
+        const act = b === btn;
+        b.classList.toggle('is-active', act);
+        const led = b.querySelector('.wa-led');
+        if (led) led.classList.toggle('is-on', act);
+      });
+      updateLcdTicker();
+      buildAndPlayGifLoop();
+    });
+    bindTip(btn, 'gif:' + btn.dataset.gifMode);
+  });
+
+  $('gifPreviewBtn').addEventListener('click', () => {
+    if (state.gifPlaying) stopGifPreview();
+    else if (state.gifFrames.length > 0) startGifPreview();
+    else buildAndPlayGifLoop();
+  });
+
+  $('exportGifBtn').addEventListener('click', encodeAndDownloadGif);
+  bindTip($('exportGifBtn'), 'gif:export');
+}
+
+async function buildAndPlayGifLoop() {
+  const seq = ++state.gifBuildSeq;
+  stopGifPreview();
+  $('gifLcdStatus').textContent = 'Building ' + state.gifFramesCount + ' frames...';
+  $('gifLcdBar').style.width = '10%';
+
+  const count = state.gifFramesCount;
+  const aspect = state.sourceCanvas.width / Math.max(1, state.sourceCanvas.height);
+  const fw = Math.min(state.gifResCap, state.sourceCanvas.width);
+  const fh = Math.max(32, Math.round(fw / aspect));
+
+  const workCanvas = document.createElement('canvas');
+  workCanvas.width = fw; workCanvas.height = fh;
+  const wctx = workCanvas.getContext('2d', { willReadFrequently: true });
+
+  let driftBase = null, driftStart = 0, driftEnd = 0;
+  if (state.gifMode === 'drift') {
+    wctx.drawImage(state.sourceCanvas, 0, 0, fw, fh);
+    const baseData = wctx.getImageData(0, 0, fw, fh);
+    if (state.eqEnabled) applyClassicEffects(baseData, state.classic);
+    applySpatialGridEffects(baseData, state.gridStates, 1.0);
+    wctx.putImageData(baseData, 0, 0);
+    driftBase = canvasToJpegBytes(workCanvas, 0.70);
+    const parsed = parseJpegStructure(driftBase);
+    driftStart = parsed.scanStart + 4;
+    driftEnd = Math.max(driftStart + 16, parsed.scanEnd - 4);
+  }
+
+  const hasClassic = CLASSIC_EFFECTS.some((fx) => (state.classic[fx.key] | 0) > 0);
+  const peak = hasClassic ? state.classic : {
+    bitShift: 34, dataOffset: 42, rgbSplit: 24, scanlines: 56, pathSort: 40, seedGrowth: 0, pixelSort: 145
+  };
+
+  const built = [];
+  for (let f = 0; f < count; f++) {
+    if (seq !== state.gifBuildSeq) return;
+    const phase = f / count;
+    const tri = 1 - Math.abs(phase * 2 - 1);
+    const sine = (Math.sin(phase * Math.PI * 2 - Math.PI / 2) + 1) * 0.5;
+
+    if (state.gifMode === 'drift' && driftBase) {
+      const mut = new Uint8Array(driftBase);
+      const span = driftEnd - driftStart;
+      const winStart = driftStart + Math.floor(phase * Math.max(1, span - 24));
+      const burst = 6 + Math.floor(sine * 14);
+      for (let b = 0; b < burst; b++) {
+        const idx = winStart + ((b * 7) % Math.max(1, span - 1));
+        if (idx > driftStart && idx < driftEnd && mut[idx] !== 0xFF && mut[idx - 1] !== 0xFF) {
+          let v = (mut[idx] ^ (0x3A + ((f * 29 + b * 13) & 0x7F))) & 0xFF;
+          if (v === 0xFF) v = 0xFE;
+          mut[idx] = v;
         }
+      }
+      const decoded = await decodeJpegBytesAsync(mut);
+      if (seq !== state.gifBuildSeq) return;
+      if (decoded) wctx.drawImage(decoded, 0, 0, fw, fh);
+      else wctx.drawImage(state.sourceCanvas, 0, 0, fw, fh);
+    } else {
+      wctx.drawImage(state.sourceCanvas, 0, 0, fw, fh);
+      const imgData = wctx.getImageData(0, 0, fw, fh);
+      const p = { bitShift: 0, dataOffset: 0, rgbSplit: 0, scanlines: 0, pathSort: 0, seedGrowth: 0, pixelSort: 0 };
+
+      if (state.gifMode === 'sweep') {
+        const amp = 0.15 + 0.85 * tri;
+        for (const fx of CLASSIC_EFFECTS) p[fx.key] = Math.round((peak[fx.key] || 0) * amp);
+      } else if (state.gifMode === 'pulse') {
+        p.bitShift   = Math.round((state.classic.bitShift || 0) * sine);
+        p.dataOffset = Math.round(Math.max(18, state.classic.dataOffset || 28) * sine);
+        p.rgbSplit   = Math.round(Math.max(14, state.classic.rgbSplit || 26) * (0.2 + 0.8 * sine));
+        p.scanlines  = Math.round(Math.max(24, state.classic.scanlines || 52) * (0.35 + 0.65 * sine));
+        p.pathSort   = Math.round((state.classic.pathSort || 26) * sine);
+        p.seedGrowth = Math.round((state.classic.seedGrowth || 0) * sine);
+        p.pixelSort  = Math.round((state.classic.pixelSort || 110) * sine);
+      } else if (state.gifMode === 'strobe') {
+        const hit = (f % 3 === 0) ? 1.0 : ((f % 2 === 0) ? 0.55 : 0.12);
+        p.bitShift   = Math.round((state.classic.bitShift || 52) * hit);
+        p.dataOffset = Math.round((state.classic.dataOffset || 68) * hit);
+        p.rgbSplit   = Math.round((state.classic.rgbSplit || 34) * hit);
+        p.scanlines  = Math.round(Math.max(20, state.classic.scanlines || 64) * (0.3 + 0.7 * hit));
+        p.pathSort   = Math.round((state.classic.pathSort || 0) * hit);
+        p.seedGrowth = Math.round((state.classic.seedGrowth || 0) * hit);
+        p.pixelSort  = Math.round((state.classic.pixelSort || 165) * hit);
+      }
+
+      applyClassicEffects(imgData, p);
+      applySpatialGridEffects(imgData, state.gridStates, phase * Math.PI * 2);
+      wctx.putImageData(imgData, 0, 0);
     }
 
-    /**
-     * Converts image data to audio data for sonification
-     * @param {ImageData} imageData - The image data to convert
-     * @returns {Float32Array} The generated audio data
-     */
-    function imageDataToAudio(imageData) {
-        const sampleRate = 44100;
-        // Make duration based on image complexity
-        const duration = Math.min(15, Math.max(5, 
-            Math.sqrt((imageData.width * imageData.height) / 10000)));
-        const numSamples = Math.floor(sampleRate * duration);
-        
-        // Create stereo buffer
-        const audioBuffer = audioContext.createBuffer(2, numSamples, sampleRate);
-        const leftChannel = audioBuffer.getChannelData(0);
-        const rightChannel = audioBuffer.getChannelData(1);
-        
-        // Calculate pixels per sample for better data distribution
-        const pixelsPerSample = Math.max(1, Math.floor((imageData.width * imageData.height) / numSamples));
-        
-        // Create frequency mapping
-        const baseFreq = 110; // A2 note
-        const maxFreq = 1760; // A6 note
-        
-        for (let i = 0; i < numSamples; i++) {
-            let leftSample = 0;
-            let rightSample = 0;
-            
-            // Average multiple pixels for each audio sample
-            for (let j = 0; j < pixelsPerSample; j++) {
-                const pixelIndex = ((i * pixelsPerSample + j) % (imageData.width * imageData.height)) * 4;
-                
-                if (pixelIndex < imageData.data.length - 4) {
-                    // Get RGB values
-                    const r = imageData.data[pixelIndex] / 255;
-                    const g = imageData.data[pixelIndex + 1] / 255;
-                    const b = imageData.data[pixelIndex + 2] / 255;
-                    
-                    // Create frequency from color data
-                    const brightness = (r + g + b) / 3;
-                    const freq = baseFreq + (maxFreq - baseFreq) * brightness;
-                    const t = i / sampleRate;
-                    
-                    // Generate complex waveform
-                    const wave = 
-                        Math.sin(2 * Math.PI * freq * t) * r +
-                        Math.sin(3 * Math.PI * freq * t) * g * 0.5 +
-                        Math.sin(4 * Math.PI * freq * t) * b * 0.25;
-                    
-                    // Create stereo effect based on horizontal position
-                    const xPos = (pixelIndex / 4) % imageData.width;
-                    const pan = (xPos / imageData.width) * 2 - 1;
-                    leftSample += wave * (1 - Math.max(0, pan)) / pixelsPerSample;
-                    rightSample += wave * (1 + Math.min(0, pan)) / pixelsPerSample;
-                }
-            }
-            
-            // Apply soft clipping and normalization
-            leftChannel[i] = Math.tanh(leftSample);
-            rightChannel[i] = Math.tanh(rightSample);
+    built.push({ width: fw, height: fh, imageData: wctx.getImageData(0, 0, fw, fh) });
+    $('gifLcdBar').style.width = Math.round(((f + 1) / count) * 100) + '%';
+    await new Promise((r) => requestAnimationFrame(r));
+  }
+
+  if (seq !== state.gifBuildSeq) return;
+  state.gifFrames = built;
+  $('gifLcdBar').style.width = '0%';
+  $('gifLcdStatus').textContent = count + ' frames at ' + state.gifFps + ' FPS - looping';
+  if (state.mode === 'gif') startGifPreview();
+}
+
+function renderGifFrameToStage(idx) {
+  const f = state.gifFrames[idx];
+  if (!f) return;
+  state.gifPlayIdx = idx;
+  const tmp = document.createElement('canvas');
+  tmp.width = f.width; tmp.height = f.height;
+  tmp.getContext('2d').putImageData(f.imageData, 0, 0);
+  photoCtx.drawImage(tmp, 0, 0, photoCanvas.width, photoCanvas.height);
+}
+
+function startGifPreview() {
+  if (state.gifFrames.length === 0) return;
+  stopGifPreview();
+  state.gifPlaying = true;
+  $('gifPreviewBtn').textContent = 'Pause Preview';
+  renderGifFrameToStage(state.gifPlayIdx % state.gifFrames.length);
+  state.gifTimer = setInterval(() => {
+    if (!state.gifPlaying || state.gifFrames.length === 0) return;
+    state.gifPlayIdx = (state.gifPlayIdx + 1) % state.gifFrames.length;
+    renderGifFrameToStage(state.gifPlayIdx);
+  }, Math.round(1000 / Math.max(1, state.gifFps)));
+}
+
+function stopGifPreview() {
+  state.gifPlaying = false;
+  $('gifPreviewBtn').textContent = 'Play Preview';
+  if (state.gifTimer) { clearInterval(state.gifTimer); state.gifTimer = null; }
+}
+
+async function encodeAndDownloadGif() {
+  const btn = $('exportGifBtn');
+  const bar = $('gifLcdBar');
+  const st = $('gifLcdStatus');
+  btn.disabled = true;
+  bar.style.width = '24%';
+  st.textContent = 'Encoding GIF89a...';
+  try {
+    if (state.gifFrames.length !== state.gifFramesCount || state.gifFrames.length === 0) {
+      await buildAndPlayGifLoop();
+    }
+    if (state.gifFrames.length === 0) return;
+    bar.style.width = '64%';
+    await new Promise((r) => requestAnimationFrame(r));
+
+    const gifBytes = encodeGif89a(state.gifFrames, state.gifFps);
+    state.gifLastBytes = gifBytes;
+    bar.style.width = '100%';
+    const kb = Math.round(gifBytes.length / 1024);
+    st.textContent = 'Exported ' + kb + ' KB - ' + state.gifFrames.length + ' frames';
+    triggerBlobDownload(new Blob([gifBytes], { type: 'image/gif' }), 'bent-pixel-5-' + state.gifMode + '-' + timestampStamp() + '.gif');
+    showToast('Exported GIF (' + kb + ' KB)');
+  } finally {
+    setTimeout(() => { bar.style.width = '0%'; btn.disabled = false; }, 450);
+  }
+}
+
+/* ============================================================
+   AUDIO-ONLY WEB AUDIO SONIFIER (STOP NEVER TOUCHES ARTWORK!)
+   ============================================================ */
+function ensureAudioContext() {
+  if (!state.audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    state.audioCtx = new AC();
+    state.audioAnalyser = state.audioCtx.createAnalyser();
+    state.audioAnalyser.fftSize = 128;
+    state.audioAnalyser.smoothingTimeConstant = 0.72;
+    state.audioFreqBuf = new Uint8Array(state.audioAnalyser.frequencyBinCount);
+    state.audioTimeBuf = new Uint8Array(state.audioAnalyser.fftSize);
+
+    state.audioGain = state.audioCtx.createGain();
+    state.audioGain.gain.value = state.muted ? 0 : state.volume * 0.65;
+    state.audioAnalyser.connect(state.audioGain);
+    state.audioGain.connect(state.audioCtx.destination);
+  }
+  return state.audioCtx;
+}
+
+function buildAudioBuffer() {
+  const buffer = synthesizeImageAudioBuffer(photoCanvas, (ch, len, sr) => ensureAudioContext().createBuffer(ch, len, sr));
+  state.audioBuffer = buffer;
+  state.audioStale = false;
+  return buffer;
+}
+
+function exportAudioWav() {
+  if (!state.audioBuffer || state.audioStale) buildAudioBuffer();
+  if (!state.audioBuffer) return null;
+  const wavBytes = encodeAudioBufferToWav(state.audioBuffer);
+  state.lastWavBytes = wavBytes;
+  const blob = new Blob([wavBytes], { type: 'audio/wav' });
+  triggerBlobDownload(blob, 'bent-pixel-sound-' + timestampStamp() + '.wav');
+  const mb = (wavBytes.length / (1024 * 1024)).toFixed(1);
+  const dur = (state.audioBuffer.duration || 6.0).toFixed(1);
+  showToast('Exported WAV (' + mb + ' MB, ' + dur + 's)');
+  return wavBytes;
+}
+
+async function startAudioPlayback(fromSec) {
+  const ctx = ensureAudioContext();
+  if (ctx.state === 'suspended') await ctx.resume();
+  if (!state.audioBuffer || state.audioStale) buildAudioBuffer();
+
+  if (state.audioSource) {
+    const old = state.audioSource; state.audioSource = null;
+    try { old.stop(); } catch (_) {}
+  }
+
+  const offset = Math.max(0, Math.min(state.audioBuffer.duration - 0.05, typeof fromSec === 'number' ? fromSec : state.audioOffsetSec));
+  const src = ctx.createBufferSource();
+  src.buffer = state.audioBuffer;
+  src.connect(state.audioAnalyser);
+  src.onended = () => {
+    if (state.audioSource === src) {
+      state.audioSource = null;
+      state.audioPlaying = false;
+      state.audioOffsetSec = 0;
+      $('lcdTimer').textContent = '00:00';
+      if (audioSeekCtrl) audioSeekCtrl.setVisual(0);
+      syncAudioUI();
+      updateLcdTicker();
+    }
+  };
+  src.start(0, offset);
+  state.audioSource = src;
+  state.audioOffsetSec = offset;
+  state.audioStartCtxTime = ctx.currentTime;
+  state.audioPlaying = true;
+  syncAudioUI();
+  updateLcdTicker();
+}
+
+function pauseAudioPlayback() {
+  if (!state.audioPlaying) return;
+  if (state.audioCtx && state.audioBuffer) {
+    state.audioOffsetSec = Math.min(state.audioBuffer.duration - 0.05, (state.audioCtx.currentTime - state.audioStartCtxTime) + state.audioOffsetSec);
+  }
+  if (state.audioSource) {
+    const old = state.audioSource; state.audioSource = null;
+    try { old.stop(); } catch (_) {}
+  }
+  state.audioPlaying = false;
+  syncAudioUI();
+  updateLcdTicker();
+}
+
+function stopAudioPlayback() {
+  // STRICTLY ONLY stops audio! NEVER modifies artwork sliders or effects!
+  if (state.audioSource) {
+    const old = state.audioSource; state.audioSource = null;
+    try { old.stop(); } catch (_) {}
+  }
+  state.audioPlaying = false;
+  state.audioOffsetSec = 0;
+  $('lcdTimer').textContent = '00:00';
+  if (audioSeekCtrl) audioSeekCtrl.setVisual(0);
+  syncAudioUI();
+  updateLcdTicker();
+}
+
+function syncAudioUI() {
+  $('btnPlayPause').classList.toggle('is-playing-now', state.audioPlaying);
+  $('playPauseIcon').innerHTML = state.audioPlaying
+    ? '<rect x="2.6" y="2.2" width="2.4" height="7.6"/><rect x="7" y="2.2" width="2.4" height="7.6"/>'
+    : '<path d="M2.6 1.8L10.4 6 2.6 10.2z"/>';
+  $('lcdPlayGlyph').innerHTML = state.audioPlaying ? '&#9654;' : '&#9632;';
+  $('audioStateLbl').textContent = state.audioPlaying ? 'Playing' : (state.audioOffsetSec > 0 ? 'Paused' : 'Ready');
+  if (!state.audioPlaying) $('audioPlayhead').classList.remove('is-visible');
+}
+
+/* ============================================================
+   INTERACTIVE JPEG STRIP JUMP, CLIPBOARD, HASH & LLAMA SECRET
+   ============================================================ */
+function jumpHexToJpegSection(part) {
+  setMode('hex');
+  if (!state.hexBytes) captureCanvasToHex();
+  const segs = state.hexSegments;
+  let targetIdx = 0;
+  let scanPct = 0;
+
+  if (part === 'hdr') {
+    targetIdx = 0;
+    scanPct = 2;
+  } else if (part === 'tbl') {
+    targetIdx = 2;
+    if (segs) {
+      for (let i = 0; i < segs.length; i++) {
+        if (segs[i] === SEG_DQT || segs[i] === SEG_DHT) { targetIdx = i; break; }
+      }
+    }
+    scanPct = 10;
+  } else if (part === 'data') {
+    targetIdx = Math.min(state.hexBytes.length - 1, state.hexScanStart + 16);
+    scanPct = 42;
+  } else if (part === 'end') {
+    targetIdx = Math.max(0, state.hexScanEnd);
+    scanPct = 97;
+  }
+
+  state.hexSelectedIdx = targetIdx;
+  state.hexPage = Math.floor(targetIdx / getHexPageSize());
+  renderHexSheet();
+  const selCell = $('hexRows').querySelector('.hx-b.is-sel');
+  if (selCell) selCell.scrollIntoView({ block: 'center' });
+  showHexByteNote(targetIdx, true);
+
+  hexScanline.style.top = scanPct + '%';
+  hexScanline.classList.add('is-visible');
+  showToast('Jumped to ' + (part === 'hdr' ? 'Header (FF D8)' : part === 'tbl' ? 'Tables (DQT/DHT)' : part === 'data' ? 'Picture Scan Data' : 'End Marker (FF D9)'));
+}
+
+async function copyImageToClipboard() {
+  try {
+    const blob = await new Promise((res) => photoCanvas.toBlob(res, 'image/png'));
+    if (blob && navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      showToast('Copied PNG to clipboard');
+      return true;
+    }
+  } catch (_) {}
+  showToast('Clipboard write unavailable in this browser');
+  return false;
+}
+
+function encodeEqHash() {
+  const vals = CLASSIC_EFFECTS.map((fx) => state.classic[fx.key] | 0);
+  return '#eq=' + vals.join(',');
+}
+
+function applyEqFromUrlHash(hashStr) {
+  const raw = typeof hashStr === 'string' ? hashStr : window.location.hash;
+  const match = (raw || '').match(/#eq=([0-9,\s]+)/);
+  if (!match) return false;
+  const nums = match[1].split(',').map((s) => parseInt(s.trim(), 10));
+  if (nums.length !== CLASSIC_EFFECTS.length || nums.some((n) => Number.isNaN(n))) return false;
+  CLASSIC_EFFECTS.forEach((fx, i) => {
+    const v = Math.max(fx.min, Math.min(fx.max, nums[i]));
+    state.classic[fx.key] = v;
+    const c = faderControllers.get(fx.key);
+    if (c) c.setValue(v);
+  });
+  state.eqEnabled = true;
+  state.activePreset = '';
+  syncBypassUI();
+  syncPresetHighlight();
+  return true;
+}
+
+async function copyShareableEqLink() {
+  const hash = encodeEqHash();
+  try { history.replaceState(null, '', hash); } catch (_) {}
+  const url = window.location.href;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(url);
+      showToast('Copied shareable preset link');
+      return url;
+    }
+  } catch (_) {}
+  showToast('Updated URL hash (' + hash + ')');
+  return url;
+}
+
+function triggerLlamaEasterEgg() {
+  llamaUntil = Date.now() + 3600;
+  updateLcdTicker();
+  for (let i = 0; i < state.peakVals.length; i++) state.peakVals[i] = 0.96;
+  showToast("It really bends the llama's pixels");
+  setTimeout(() => updateLcdTicker(), 3700);
+
+  if (!state.muted) {
+    try {
+      const ctx = ensureAudioContext();
+      if (ctx.state === 'suspended') ctx.resume();
+      const notes = [440, 554.37, 659.25, 880];
+      const now = ctx.currentTime;
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.075);
+        g.gain.setValueAtTime(0.001, now + idx * 0.075);
+        g.gain.linearRampToValueAtTime(0.16 * state.volume, now + idx * 0.075 + 0.015);
+        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.075 + 0.095);
+        osc.connect(g);
+        g.connect(ctx.destination);
+        osc.start(now + idx * 0.075);
+        osc.stop(now + idx * 0.075 + 0.1);
+      });
+    } catch (_) {}
+  }
+}
+
+function syncVolumeUI() {
+  const effective = state.muted ? 0 : state.volume;
+  const pct = Math.round(effective * 100);
+  $('volumeGroove').style.setProperty('--val-pct', pct + '%');
+  $('volumeGroove').style.setProperty('--val-ratio', effective.toFixed(4));
+  $('volumeGroove').setAttribute('aria-valuenow', String(pct));
+  const pips = $('volPips').children;
+  for (let i = 0; i < pips.length; i++) {
+    const threshold = (i + 0.5) / pips.length;
+    pips[i].classList.toggle('is-lit', effective >= threshold * 0.9);
+  }
+  if (state.audioGain) state.audioGain.gain.value = effective * 0.65;
+}
+
+/* ============================================================
+   MODES, SKINS, MENUS, SAVE & GLOBAL WIRING
+   ============================================================ */
+function setMode(nextMode) {
+  if (!['bend', 'grid', 'hex', 'gif'].includes(nextMode)) return;
+  if (state.mode === 'gif' && nextMode !== 'gif') {
+    stopGifPreview();
+    if (nextMode === 'hex' && state.hexBytes) decodeHexBytesToCanvas();
+    else redrawCanvasImmediate();
+  }
+  state.mode = nextMode;
+  desktopStage.dataset.mode = nextMode;
+  presetDrawer.hidden = true;
+  $('presetsBtn').setAttribute('aria-expanded', 'false');
+
+  document.querySelectorAll('.studio-tab').forEach((btn) => {
+    const act = btn.dataset.tab === nextMode;
+    btn.classList.toggle('is-active', act);
+    btn.setAttribute('aria-selected', String(act));
+    const led = btn.querySelector('.wa-led');
+    if (led) led.classList.toggle('is-on', act);
+  });
+
+  document.querySelectorAll('.studio-pane').forEach((pane) => {
+    pane.classList.toggle('is-active', pane.dataset.pane === nextMode);
+  });
+
+  $('gifPreviewBtn').hidden = nextMode !== 'gif';
+
+  if (nextMode === 'bend' || nextMode === 'grid') {
+    if (state.hexDecodeFault) redrawCanvasImmediate();
+    hexScanline.classList.remove('is-visible');
+  } else if (nextMode === 'hex') {
+    if (!state.hexBytes) captureCanvasToHex();
+    else renderHexSheet();
+  } else if (nextMode === 'gif') {
+    hexScanline.classList.remove('is-visible');
+    buildAndPlayGifLoop();
+  }
+
+  state.learnSticky = null;
+  showLearningKey('mode:' + nextMode, false);
+  updateLcdTicker();
+  requestAnimationFrame(layoutArtworkFrame);
+}
+
+function applySkin(skinName) {
+  const clean = VALID_SKINS.includes(skinName) ? skinName : 'silver';
+  state.skin = clean;
+  if (clean === 'silver') document.documentElement.removeAttribute('data-skin');
+  else document.documentElement.setAttribute('data-skin', clean);
+  const chkMap = {
+    silver: 'chkSilver',
+    carbon: 'chkCarbon',
+    olive:  'chkOlive',
+    amber:  'chkAmber',
+    green:  'chkGreen'
+  };
+  for (const [key, id] of Object.entries(chkMap)) {
+    const el = $(id);
+    if (el) el.textContent = clean === key ? 'On' : '';
+  }
+  try { localStorage.setItem(STORAGE_SKIN_KEY, clean); } catch (_) {}
+}
+
+function closeAllMenus() {
+  $('menuFileDrop').hidden = true;
+  $('menuViewDrop').hidden = true;
+  $('menuFileBtn').classList.remove('is-open');
+  $('menuViewBtn').classList.remove('is-open');
+  $('menuFileBtn').setAttribute('aria-expanded', 'false');
+  $('menuViewBtn').setAttribute('aria-expanded', 'false');
+}
+
+function toggleMenu(btnId, dropId) {
+  const drop = $(dropId);
+  const willOpen = drop.hidden;
+  closeAllMenus();
+  photoPopover.hidden = true;
+  presetDrawer.hidden = true;
+  if (willOpen) {
+    drop.hidden = false;
+    $(btnId).classList.add('is-open');
+    $(btnId).setAttribute('aria-expanded', 'true');
+    focusWindow('sound');
+  }
+}
+
+function setCompareOriginal(active) {
+  artworkFrame.classList.toggle('is-peeking', !!active);
+  $('compareBtn').classList.toggle('is-pressed', !!active);
+}
+
+function timestampStamp() {
+  return new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+}
+
+function triggerBlobDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+function saveAsPng() {
+  photoCanvas.toBlob((blob) => {
+    if (!blob) return;
+    triggerBlobDownload(blob, 'bent-pixel-5-' + timestampStamp() + '.png');
+    showToast('Saved PNG image');
+  }, 'image/png');
+}
+
+function saveAsJpg() {
+  if (state.hexActiveOutput && state.hexBytes && !state.hexDecodeFault) {
+    triggerBlobDownload(new Blob([state.hexBytes], { type: 'image/jpeg' }), 'bent-pixel-5-hex-' + timestampStamp() + '.jpg');
+    showToast('Saved mutated JPEG');
+    return;
+  }
+  photoCanvas.toBlob((blob) => {
+    if (!blob) return;
+    triggerBlobDownload(blob, 'bent-pixel-5-' + timestampStamp() + '.jpg');
+    showToast('Saved JPG image');
+  }, 'image/jpeg', 0.92);
+}
+
+function saveCurrentOutput() {
+  if (state.mode === 'gif') { encodeAndDownloadGif(); return; }
+  if (state.hexActiveOutput && state.hexBytes && !state.hexDecodeFault) {
+    saveAsJpg();
+    return;
+  }
+  saveAsPng();
+}
+
+function initGlobalWiring() {
+  // Top Studio Mode Tabs
+  document.querySelectorAll('.studio-tab[data-tab]').forEach((btn) => {
+    btn.addEventListener('click', () => setMode(btn.dataset.tab));
+    bindTip(btn, 'mode:' + btn.dataset.tab);
+  });
+
+  // Sound Menu Bar (File / View / Guide)
+  $('menuFileBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleMenu('menuFileBtn', 'menuFileDrop'); });
+  $('menuViewBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleMenu('menuViewBtn', 'menuViewDrop'); });
+  $('menuGuideBtn').addEventListener('click', () => { closeAllMenus(); openFieldGuide(true); });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.wa-menu-wrap')) closeAllMenus();
+    if (!e.target.closest('#openPhotoBtn') && !e.target.closest('#photoPopover')) {
+      photoPopover.hidden = true;
+      $('openPhotoBtn').setAttribute('aria-expanded', 'false');
+    }
+    if (!e.target.closest('#presetsBtn') && !e.target.closest('#presetDrawer')) {
+      presetDrawer.hidden = true;
+      $('presetsBtn').setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  $('ddUploadPhoto').addEventListener('click', () => { closeAllMenus(); $('photoInput').click(); });
+  document.querySelectorAll('[data-dd-specimen]').forEach((btn) => {
+    btn.addEventListener('click', () => { closeAllMenus(); generateSpecimen(parseInt(btn.dataset.ddSpecimen, 10)); });
+  });
+  $('ddSavePng').addEventListener('click', () => { closeAllMenus(); saveAsPng(); });
+  $('ddSaveJpg').addEventListener('click', () => { closeAllMenus(); saveAsJpg(); });
+  $('ddCopyImage').addEventListener('click', () => { closeAllMenus(); copyImageToClipboard(); });
+  $('ddExportWav').addEventListener('click', () => { closeAllMenus(); exportAudioWav(); });
+  $('ddExportGif').addEventListener('click', () => { closeAllMenus(); setMode('gif'); encodeAndDownloadGif(); });
+
+  $('ddSkinSilver').addEventListener('click', () => { closeAllMenus(); applySkin('silver'); showToast('Classic Silver theme'); });
+  $('ddSkinCarbon').addEventListener('click', () => { closeAllMenus(); applySkin('carbon'); showToast('Carbon Dark theme'); });
+  $('ddSkinOlive').addEventListener('click', () => { closeAllMenus(); applySkin('olive'); showToast('Alpine Olive theme'); });
+  $('ddSkinAmber').addEventListener('click', () => { closeAllMenus(); applySkin('amber'); showToast('Amber CRT theme'); });
+  $('ddSkinGreen').addEventListener('click', () => { closeAllMenus(); applySkin('green'); showToast('Classic Green theme'); });
+  $('ddToggleTips').addEventListener('click', () => { closeAllMenus(); toggleLearningBar(); });
+  $('ddResetLayout').addEventListener('click', () => { closeAllMenus(); resetWindowLayout(false); });
+
+  // Canvas Action Bar
+  $('openPhotoBtn').addEventListener('click', (e) => { e.stopPropagation(); togglePhotoPopover(); });
+  $('photoPopoverClose').addEventListener('click', () => togglePhotoPopover(false));
+  $('uploadPhotoBtn').addEventListener('click', () => $('photoInput').click());
+  $('photoInput').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (f) loadUploadedFile(f);
+    e.target.value = '';
+  });
+
+  $('undoBtn').addEventListener('click', performUndo);
+  $('redoBtn').addEventListener('click', performRedo);
+  $('saveBtn').addEventListener('click', saveCurrentOutput);
+
+  bindTip($('openPhotoBtn'), 'btn:openPhoto');
+  bindTip($('compareBtn'), 'btn:compare');
+  bindTip($('undoBtn'), 'btn:undo');
+  bindTip($('redoBtn'), 'btn:undo');
+  bindTip($('saveBtn'), 'btn:save');
+
+  // Learning Bar & Floating Field Guide
+  $('tipsToggleBtn').addEventListener('click', () => toggleLearningBar());
+  $('openGuideBtn').addEventListener('click', () => openFieldGuide(true));
+  $('guideCloseBtn').addEventListener('click', () => openFieldGuide(false));
+
+  document.querySelectorAll('.guide-folder-tab[data-guide-tab]').forEach((btn) => {
+    btn.addEventListener('click', () => selectGuideTab(btn.dataset.guideTab));
+  });
+
+  document.querySelectorAll('[data-recipe]').forEach((btn) => {
+    btn.addEventListener('click', () => launchGuidedRecipe(btn.dataset.recipe, btn));
+  });
+
+  // Interactive Clickable JPEG Strip inside Floating Field Guide
+  document.querySelectorAll('[data-jpeg-jump]').forEach((btn) => {
+    const part = btn.dataset.jpegJump;
+    btn.addEventListener('click', () => jumpHexToJpegSection(part));
+    btn.addEventListener('pointerenter', () => {
+      const map = { hdr: SEG_SOI, tbl: SEG_DQT, data: SEG_SCAN, end: SEG_EOI };
+      const base = JPEG_SEG_NOTES[map[part]];
+      if (base) showLearningNote(base, false);
+    });
+    btn.addEventListener('pointerleave', resetLearningDeferred);
+  });
+
+  // Triple-click Sound corner bolt triggers Winamp Llama Easter Egg
+  let boltClicks = 0;
+  let boltTimer = null;
+  $('soundCornerBolt').addEventListener('pointerdown', (e) => e.stopPropagation());
+  $('soundCornerBolt').addEventListener('click', (e) => {
+    e.stopPropagation();
+    boltClicks += 1;
+    clearTimeout(boltTimer);
+    if (boltClicks >= 3) {
+      boltClicks = 0;
+      triggerLlamaEasterEgg();
+    } else {
+      boltTimer = setTimeout(() => { boltClicks = 0; }, 550);
+    }
+  });
+
+  // Sound Window Audio-Only Controls
+  $('spectrumBtn').addEventListener('click', cycleVisStyle);
+  bindTip($('spectrumBtn'), 'audio:spectrum');
+
+  $('btnPlayPause').addEventListener('click', () => {
+    if (state.audioPlaying) pauseAudioPlayback();
+    else startAudioPlayback(state.audioOffsetSec);
+  });
+  $('btnAudioStop').addEventListener('click', stopAudioPlayback);
+  $('saveWavBtn').addEventListener('click', exportAudioWav);
+  bindTip($('btnPlayPause'), 'audio:play');
+  bindTip($('btnAudioStop'), 'audio:stop');
+  bindTip($('saveWavBtn'), 'audio:saveWav');
+
+  audioSeekCtrl = bindHorizontalGroove($('audioSeekGroove'), {
+    min: 0, max: 100, step: 0.5, value: 0, alwaysFire: true,
+    onChange(v) {
+      const dur = state.audioBuffer ? state.audioBuffer.duration : 6.0;
+      const sec = (v / 100) * dur;
+      $('lcdTimer').textContent = formatMmSs(sec);
+      state.audioOffsetSec = sec;
+      const ph = $('audioPlayhead');
+      if (ph) {
+        ph.style.top = v.toFixed(2) + '%';
+        if (state.audioPlaying) ph.classList.add('is-visible');
+      }
+      if (state.audioPlaying) startAudioPlayback(sec);
+    },
+    onCommit(v) {
+      if (!state.audioPlaying) {
+        const dur = state.audioBuffer ? state.audioBuffer.duration : 6.0;
+        startAudioPlayback((v / 100) * dur);
+      }
+    }
+  });
+  bindTip($('audioSeekGroove'), 'audio:scrub');
+
+  bindHorizontalGroove($('volumeGroove'), {
+    min: 0, max: 100, step: 1, value: Math.round(state.volume * 100),
+    onChange(v) {
+      state.muted = false;
+      state.volume = v / 100;
+      syncVolumeUI();
+    }
+  });
+  $('muteBtn').addEventListener('click', () => {
+    state.muted = !state.muted;
+    syncVolumeUI();
+    showToast(state.muted ? 'Audio muted' : 'Audio unmuted');
+  });
+  bindTip($('volumeHump'), 'audio:volume');
+
+  // Dual-Mode Direct Canvas Compare: Hold-to-Peek + Drag Split Curtain in Effects/Hex
+  $('compareBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); setCompareOriginal(true); });
+
+  let canvasInspecting = false;
+  let canvasDragStartX = 0;
+  let curtainEngaged = false;
+
+  function clearCanvasInspect() {
+    canvasInspecting = false;
+    curtainEngaged = false;
+    artworkFrame.classList.remove('is-curtain');
+    setCompareOriginal(false);
+  }
+
+  artworkFrame.addEventListener('pointerdown', (e) => {
+    if (state.mode === 'grid') return;
+    if (e.target.closest('.hex-fault-plate')) return;
+    e.preventDefault();
+    canvasInspecting = true;
+    curtainEngaged = false;
+    canvasDragStartX = e.clientX;
+    try { artworkFrame.setPointerCapture(e.pointerId); } catch (_) {}
+    setCompareOriginal(true);
+  });
+
+  artworkFrame.addEventListener('pointermove', (e) => {
+    if (!canvasInspecting) return;
+    if (state.mode !== 'bend' && state.mode !== 'hex') return;
+    if (!curtainEngaged && Math.abs(e.clientX - canvasDragStartX) >= 6) {
+      curtainEngaged = true;
+      artworkFrame.classList.add('is-curtain');
+    }
+    if (curtainEngaged) {
+      const r = artworkFrame.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(100, ((e.clientX - r.left) / Math.max(1, r.width)) * 100));
+      artworkFrame.style.setProperty('--curtain-pct', pct.toFixed(2) + '%');
+    }
+  });
+
+  window.addEventListener('pointerup', clearCanvasInspect);
+  window.addEventListener('pointercancel', clearCanvasInspect);
+
+  // Clipboard Paste (Cmd/Ctrl+V) for instant photo drop-in
+  window.addEventListener('paste', (e) => {
+    const items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.type && item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file) {
+          e.preventDefault();
+          loadUploadedFile(file);
+          showToast('Pasted image from clipboard');
+          break;
         }
-        
-        return audioBuffer;
+      }
+    }
+  });
+
+  // Keyboard Shortcuts (Undo/Redo, Play, Shuffle, Tabs, Llama Secret)
+  let llamaBuf = '';
+  window.addEventListener('keydown', (e) => {
+    const tag = document.activeElement && document.activeElement.tagName;
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+      e.preventDefault();
+      if (e.shiftKey) performRedo();
+      else performUndo();
+      return;
+    }
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'y' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+      e.preventDefault();
+      performRedo();
+      return;
+    }
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    if (e.key === 'Escape') {
+      closeAllMenus();
+      photoPopover.hidden = true;
+      presetDrawer.hidden = true;
+      return;
+    }
+    if (document.activeElement === $('hexRows')) return;
+
+    if (e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      llamaBuf = (llamaBuf + e.key.toLowerCase()).slice(-5);
+      if (llamaBuf === 'llama') { llamaBuf = ''; triggerLlamaEasterEgg(); return; }
     }
 
-    // Update progress bar
-    /**
-     * Updates the audio progress bar and time display
-     * @returns {void}
-     */
-    function updateProgress() {
-        if (!isPlaying || !audioBuffer) return;
-        
-        const progressBar = document.getElementById('audioProgress');
-        const timeDisplay = document.getElementById('timeDisplay');
-        const currentTime = audioContext.currentTime - startTime;
-        const duration = audioBuffer.duration;
-        
-        if (currentTime >= duration) {
-            stopAudio();
-            return;
-        }
-        
-        const progress = (currentTime / duration) * 100;
-        progressBar.value = progress;
-        
-        // Update time display
-        const currentMinutes = Math.floor(currentTime / 60);
-        const currentSeconds = Math.floor(currentTime % 60);
-        const totalMinutes = Math.floor(duration / 60);
-        const totalSeconds = Math.floor(duration % 60);
-        
-        timeDisplay.textContent = `${currentMinutes}:${currentSeconds.toString().padStart(2, '0')} / ${totalMinutes}:${totalSeconds.toString().padStart(2, '0')}`;
+    if (e.key === '?') { e.preventDefault(); openFieldGuide(); return; }
+    if (e.key === ' ') { e.preventDefault(); setCompareOriginal(true); }
+    else if (e.key.toLowerCase() === 'p') {
+      if (state.audioPlaying) pauseAudioPlayback();
+      else startAudioPlayback(state.audioOffsetSec);
     }
+    else if (e.key.toLowerCase() === 'r') shuffleClassicEffects();
+    else if (e.key === '1') setMode('bend');
+    else if (e.key === '2') setMode('grid');
+    else if (e.key === '3') setMode('hex');
+    else if (e.key === '4') setMode('gif');
+  });
+  window.addEventListener('keyup', (e) => {
+    if (e.key === ' ') setCompareOriginal(false);
+  });
 
-    // Play/Pause audio
-    /**
-     * Toggles audio playback state
-     * @returns {void}
-     */
-    function toggleAudio() {
-        if (!audioContext) initAudioContext();
-        
-        if (!audioBuffer) {
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            audioBuffer = imageDataToAudio(imageData);
-        }
+  // Drag-and-Drop Image Anywhere
+  const dropOverlay = $('dropOverlay');
+  let depth = 0;
+  window.addEventListener('dragenter', (e) => { e.preventDefault(); depth++; dropOverlay.classList.add('is-visible'); });
+  window.addEventListener('dragover', (e) => e.preventDefault());
+  window.addEventListener('dragleave', (e) => {
+    e.preventDefault(); depth = Math.max(0, depth - 1);
+    if (depth === 0) dropOverlay.classList.remove('is-visible');
+  });
+  window.addEventListener('drop', (e) => {
+    e.preventDefault(); depth = 0; dropOverlay.classList.remove('is-visible');
+    const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (file) loadUploadedFile(file);
+  });
 
-        if (!isPlaying) {
-            audioSource = audioContext.createBufferSource();
-            audioSource.buffer = audioBuffer;
-            audioSource.connect(gainNode);
-            audioSource.start(0);
-            startTime = audioContext.currentTime;
-            isPlaying = true;
-            document.getElementById('playButton').textContent = '‖';
-            progressInterval = setInterval(updateProgress, 50);
-        } else {
-            stopAudio();
-        }
-    }
+  const ro = new ResizeObserver(() => layoutArtworkFrame());
+  ro.observe(canvasCavity);
 
-    // Stop audio playback
-    /**
-     * Stops audio playback and resets the player state
-     * @returns {void}
-     */
-    function stopAudio() {
-        if (audioSource) {
-            audioSource.stop();
-            audioSource = null;
-        }
-        isPlaying = false;
-        document.getElementById('playButton').textContent = '►';
-        clearInterval(progressInterval);
-    }
+  window.addEventListener('hashchange', () => {
+    if (applyEqFromUrlHash()) redrawCanvasImmediate();
+  });
+}
 
-    // Update audio from current image data
-    /**
-     * Updates the audio buffer with new image data
-     * @returns {void}
-     */
-    function updateAudioBuffer() {
-        if (currentImage) {
-            stopAudio();
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            try {
-                audioBuffer = imageDataToAudio(imageData);
-                const duration = audioBuffer.duration;
-                const minutes = Math.floor(duration / 60);
-                const seconds = Math.floor(duration % 60);
-                document.getElementById('audioProgress').value = 0;
-                document.getElementById('timeDisplay').textContent = 
-                    `0:00 / ${minutes}:${seconds.toString().padStart(2, '0')}`;
-            } catch (error) {
-                console.error('Error creating audio:', error);
-                // Show error in UI
-                document.getElementById('timeDisplay').textContent = 'Error creating audio';
-            }
-        }
-    }
+/* ============================================================
+   BOOTSTRAP
+   ============================================================ */
+function boot() {
+  try {
+    const savedSkin = localStorage.getItem(STORAGE_SKIN_KEY);
+    if (savedSkin && VALID_SKINS.includes(savedSkin)) applySkin(savedSkin);
+  } catch (_) {}
 
-    // Update volume
-    /**
-     * Updates the audio volume
-     * @param {number} value - The new volume value (0-1)
-     * @returns {void}
-     */
-    function updateVolume(value) {
-        if (gainNode) {
-            gainNode.gain.value = value;
-        }
-    }
+  initWindowManager();
+  buildPhotoPopover();
+  initEffectsPanel();
+  applyEqFromUrlHash();
+  initGridPanel();
+  initHexPanel();
+  initGifPanel();
+  initGlobalWiring();
 
-    // Create audio player UI
-    /**
-     * Creates and initializes the audio player interface
-     * @returns {void}
-     */
-    function createAudioPlayer() {
-        // Create header section
-        const header = document.createElement('div');
-        header.className = 'effects-header';
-        const title = document.createElement('h3');
-        title.textContent = 'Listen';
-        
-        // Create tooltip container
-        const titleContainer = document.createElement('span');
-        titleContainer.style.position = 'relative';
-        titleContainer.appendChild(title);
-        
-        const titleTooltip = document.createElement('span');
-        titleTooltip.className = 'tooltip-text';
-        titleTooltip.style.width = '350px';  // Wider tooltip for longer explanation
-        titleTooltip.textContent = `This audio player interprets your glitch art as sound, creating a unique audio experience from your visual effects. The process works by:
+  syncBypassUI();
+  syncVolumeUI();
+  syncUndoRedoUI();
+  generateSpecimen(0);
+  setMode('bend');
+  requestAnimationFrame(drawSpectrumFrame);
+}
 
-1. Converting the image's pixel data into an audio buffer
-2. Each RGB value becomes a sample in the audio stream
-3. Color brightness influences frequency (brighter = higher pitch)
-4. Image width affects stereo positioning
-5. Effects like bit-shift and data offset create unique audio artifacts
+window.__BPL_WINAMP__ = {
+  getState: () => state,
+  setMode,
+  applySkin,
+  cycleVisStyle,
+  setEqEnabled,
+  applyClassicEffects,
+  encodeGif89a,
+  encodeAudioBufferToWav,
+  exportAudioWav,
+  saveAsPng,
+  saveAsJpg,
+  parseJpegStructure,
+  captureCanvasToHex,
+  writeSingleHexByte,
+  runHexOperator,
+  toggleLearningBar,
+  openFieldGuide,
+  selectGuideTab,
+  launchGuidedRecipe,
+  jumpHexToJpegSection,
+  showHexByteNote,
+  performUndo,
+  performRedo,
+  setWindowShaded,
+  resetWindowLayout,
+  copyShareableEqLink,
+  applyEqFromUrlHash,
+  triggerLlamaEasterEgg
+};
 
-This technique, known as "databending," treats image data as raw audio samples, similar to how vintage artists would modify images by editing them in audio editors. The result is a synchronized audio-visual experience where your glitch effects create corresponding sound patterns.`;
-        
-        titleContainer.appendChild(titleTooltip);
-        header.appendChild(titleContainer);
-        
-        // Add tooltip positioning for the title
-        titleContainer.addEventListener('mouseenter', (e) => {
-            const rect = title.getBoundingClientRect();
-            titleTooltip.style.left = rect.left + 'px';
-            titleTooltip.style.top = (rect.bottom + 5) + 'px';
-            
-            // Ensure tooltip stays within viewport
-            const tooltipRect = titleTooltip.getBoundingClientRect();
-            if (tooltipRect.right > window.innerWidth) {
-                titleTooltip.style.left = (window.innerWidth - tooltipRect.width - 10) + 'px';
-            }
-            if (tooltipRect.bottom > window.innerHeight) {
-                titleTooltip.style.top = (rect.top - tooltipRect.height - 5) + 'px';
-            }
-        });
-        
-        const audioPlayer = document.createElement('div');
-        audioPlayer.className = 'audio-player';
-        
-        // Create audio controls
-        const controls = document.createElement('div');
-        controls.className = 'audio-controls';
-        controls.innerHTML = `
-            <button id="playButton" class="action-btn">►</button>
-            <span>
-                <button id="updateAudio" class="action-btn">⟲</button>
-                <span class="tooltip-text">Reload sample - Updates the audio with any changes made to the image</span>
-            </span>
-            <div class="progress-container">
-                <progress id="audioProgress" value="0" max="100"></progress>
-                <span id="timeDisplay">0:00 / 0:00</span>
-            </div>
-            <div class="volume-container">
-                <span>၊၊||၊</span>
-                <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="0.2">
-            </div>
-        `;
-        
-        // Append controls to audio player
-        audioPlayer.appendChild(controls);
-        
-        // Insert at the bottom of the editor
-        const editor = document.getElementById('editor');
-        editor.appendChild(header);
-        editor.appendChild(audioPlayer);
-        
-        // Add event listeners and tooltip functionality
-        const updateAudioBtn = document.getElementById('updateAudio');
-        const updateAudioContainer = updateAudioBtn.parentElement;
-        const reloadTooltip = updateAudioContainer.querySelector('.tooltip-text');
-        
-        updateAudioContainer.addEventListener('mouseenter', (e) => {
-            const rect = updateAudioBtn.getBoundingClientRect();
-            reloadTooltip.style.left = rect.left + 'px';
-            reloadTooltip.style.top = (rect.bottom + 5) + 'px';
-            
-            // Ensure tooltip stays within viewport
-            const tooltipRect = reloadTooltip.getBoundingClientRect();
-            if (tooltipRect.right > window.innerWidth) {
-                reloadTooltip.style.left = (window.innerWidth - tooltipRect.width - 10) + 'px';
-            }
-            if (tooltipRect.bottom > window.innerHeight) {
-                reloadTooltip.style.top = (rect.top - tooltipRect.height - 5) + 'px';
-            }
-        });
-        
-        document.getElementById('playButton').addEventListener('click', async () => {
-            try {
-                // Initialize audio context on first click
-                if (!audioContext) {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    gainNode = audioContext.createGain();
-                    gainNode.connect(audioContext.destination);
-                }
-                
-                // Resume audio context if it's suspended
-                if (audioContext.state === 'suspended') {
-                    await audioContext.resume();
-                }
-                
-                toggleAudio();
-            } catch (error) {
-                console.error('Audio playback error:', error);
-                document.getElementById('timeDisplay').textContent = 'Audio error';
-            }
-        });
-        
-        document.getElementById('updateAudio').addEventListener('click', updateAudioBuffer);
-        
-        document.getElementById('volumeControl').addEventListener('input', (e) => {
-            updateVolume(parseFloat(e.target.value));
-        });
-        
-        document.getElementById('audioProgress').addEventListener('click', (e) => {
-            if (!audioBuffer) return;
-            
-            const progressBar = e.target;
-            const rect = progressBar.getBoundingClientRect();
-            const clickPosition = (e.clientX - rect.left) / rect.width;
-            const seekTime = clickPosition * audioBuffer.duration;
-            
-            stopAudio();
-            audioSource = audioContext.createBufferSource();
-            audioSource.buffer = audioBuffer;
-            audioSource.connect(gainNode);
-            audioSource.start(0, seekTime);
-            startTime = audioContext.currentTime - seekTime;
-            isPlaying = true;
-            document.getElementById('playButton').textContent = '‖';
-            progressInterval = setInterval(updateProgress, 50);
-        });
-    }
-
-    // Call createAudioPlayer after canvas initialization
-    createAudioPlayer();
-
-    // Update audio buffer when effects are applied
-    const originalRedrawWithEffects = redrawWithEffects;
-    redrawWithEffects = function() {
-        originalRedrawWithEffects();
-        if (audioBuffer) {
-            updateAudioBuffer();
-        }
-    };
-});
+boot();

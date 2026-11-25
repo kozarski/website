@@ -7,7 +7,7 @@
     '/sandwich/': [['Comico', '/sandwich/fonts/comico-regular.ff3e3214ef73.woff2']],
     '/pride/': [['Aktura', '/fonts/aktura-regular.537e4b41ea19.woff2']],
     '/pixel/': [
-      ['Press Start 2P', '/fonts/press-start-2p-400-latin.42144b97bd29.woff2'],
+      ['JetBrains Mono', '/fonts/jetbrains-mono-regular.2dc43470e34a.woff2'],
       ['Space Mono', '/fonts/space-mono-400-latin.e0c8e616bda2.woff2'],
       ['Space Mono', '/fonts/space-mono-700-latin.af7cf6d2b897.woff2', '700'],
     ],
