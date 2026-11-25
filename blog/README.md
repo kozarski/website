@@ -12,9 +12,21 @@ To build the complete website, run `npm run build` from the repository root.
 
 ## Dependency audit
 
+As of 2026-11-02, the installed dependencies pass the audit without exceptions.
+The scoped override in `package.json` pins `@11ty/recursive-copy`'s `minimatch`
+to 11.0.1 to fix [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249).
+Eleventy 3.1.7 still requests recursive-copy 4, which requests minimatch 3.
+The copy helper uses the `minimatch.match` API supported by the patched release;
+`npm run test:blog-dependencies` checks copying with glob filters and exclusions.
+Remove the override when Eleventy's supported dependency tree includes a patched
+minimatch, then rerun that test, the complete build/link checks, and both audits.
+Do not use `npm audit fix --force` to downgrade Eleventy.
+
 Run `npm run audit:blog` from the repository root for the same audit used by CI
 and deployment. It blocks every npm audit finding except the temporary exceptions
 below. `npm audit --prefix blog` shows the unfiltered upstream report.
+
+The historical exceptions below have expired and do not suppress any findings.
 
 ### braces
 

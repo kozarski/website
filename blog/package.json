@@ -13,5 +13,10 @@
     "@11ty/eleventy-plugin-rss": "^3.1.0",
     "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.2",
     "luxon": "^3.7.2"
+  },
+  "overrides": {
+    "@11ty/recursive-copy": {
+      "minimatch": "11.0.1"
+    }
   }
 }

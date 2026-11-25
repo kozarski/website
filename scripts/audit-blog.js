@@ -63,6 +63,14 @@ function main() {
   }
   if (blocked.length) {
     console.error(`Blocking vulnerabilities: ${blocked.join(', ')}.`);
+    for (const name of blocked) {
+      const finding = report.vulnerabilities[name];
+      for (const cause of finding.via) {
+        if (typeof cause === 'object') {
+          console.error(`${name}: ${cause.title} (${cause.severity})\n${cause.url}`);
+        }
+      }
+    }
     console.error('Run npm audit --prefix blog for details.');
     process.exitCode = 1;
   } else {

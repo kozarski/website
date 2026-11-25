@@ -3,8 +3,7 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
-      day: monday
+      interval: daily
       time: '09:00'
       timezone: Europe/London
     assignees:
@@ -16,8 +15,7 @@ updates:
   - package-ecosystem: npm
     directory: /blog
     schedule:
-      interval: weekly
-      day: monday
+      interval: daily
       time: '09:00'
       timezone: Europe/London
     assignees:

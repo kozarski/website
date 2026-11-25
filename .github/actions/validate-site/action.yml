@@ -1,0 +1,70 @@
+name: Validate website
+description: Shared build, tests, and security gate for checks and deployment
+runs:
+  using: composite
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v7
+      with:
+        node-version: '24'
+        cache: npm
+        cache-dependency-path: |
+          package-lock.json
+          blog/package-lock.json
+    - name: Install Playground Dependencies
+      id: root
+      shell: bash
+      run: npm ci --ignore-scripts
+    - name: Install Blog Dependencies
+      id: blog
+      shell: bash
+      run: npm ci --prefix blog --ignore-scripts
+    - name: Build Website
+      id: build
+      shell: bash
+      run: npm run build
+    - name: Check Site Links
+      id: links
+      shell: bash
+      run: npm run check
+    - name: Check Sandwich Physics
+      id: physics
+      if: ${{ !cancelled() && steps.root.outcome == 'success' }}
+      shell: bash
+      run: npm run test:sandwich
+    - name: Check Blog Dependency Compatibility
+      id: compatibility
+      if: ${{ !cancelled() && steps.blog.outcome == 'success' }}
+      shell: bash
+      run: npm run test:blog-dependencies
+    - name: Check Audit Policy
+      id: policy
+      if: ${{ !cancelled() && steps.blog.outcome == 'success' }}
+      shell: bash
+      run: npm run test:audit
+    - name: Audit Playground Dependencies
+      id: root-audit
+      if: ${{ !cancelled() && steps.root.outcome == 'success' }}
+      shell: bash
+      run: npm audit
+    - name: Audit Blog Dependencies
+      id: blog-audit
+      if: ${{ !cancelled() && steps.blog.outcome == 'success' }}
+      shell: bash
+      run: npm run audit:blog
+    - name: Validation Summary
+      if: always()
+      shell: bash
+      env:
+        RESULTS: ${{ toJSON(steps) }}
+      run: |
+        node <<'NODE'
+        const fs = require('node:fs');
+        const steps = JSON.parse(process.env.RESULTS);
+        const rows = Object.entries(steps).map(([name, step]) => `| ${name} | ${step.outcome} |`);
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+          `## Website validation\n\n| Check | Result |\n| --- | --- |\n${rows.join('\n')}\n\n` +
+          'Every check must pass before a deployment artifact can be uploaded. ' +
+          'Open the failed step for details. For dependency findings, inspect the advisory and update the affected dependency; ' +
+          'rerunning an unchanged lockfile does not fix a vulnerability.\n');
+        NODE
