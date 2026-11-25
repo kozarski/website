@@ -7,6 +7,8 @@
     "build:blog": "npm --prefix blog run build:site",
     "build:sandwich": "node scripts/sandwich.mjs",
     "dev:sandwich": "node scripts/sandwich.mjs --serve",
+    "build:form": "node scripts/form.mjs",
+    "dev:form": "node scripts/form.mjs --serve",
     "test:sandwich": "node --test sandwich/tests/*.test.mjs",
     "dev:blog": "npm --prefix blog run dev --",
     "check": "node scripts/check.js",
@@ -16,6 +18,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@mediapipe/tasks-vision": "^1.2.3",
     "cannon-es": "^0.20.0",
     "three": "^0.187.0"
   },

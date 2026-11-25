@@ -13,3 +13,9 @@ sandwich/app.bundle.js.LEGAL.txt
 sandwich/THIRD_PARTY_NOTICES.txt
 sandwich/tests/performance.bundle.js
 sandwich/tests/performance.bundle.js.LEGAL.txt
+form/app.bundle.js
+form/app.bundle.js.map
+form/app.bundle.js.LEGAL.txt
+form/THIRD_PARTY_NOTICES.txt
+form/vendor/mediapipe/vision_wasm_internal.js
+form/vendor/mediapipe/vision_wasm_internal.wasm

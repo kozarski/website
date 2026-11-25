@@ -19,6 +19,12 @@ const siteFiles = [
   'lab',
   'commongrounds',
   'drawplets',
+  'form/index.html',
+  'form/css',
+  'form/vendor',
+  'form/app.bundle.js',
+  'form/app.bundle.js.LEGAL.txt',
+  'form/THIRD_PARTY_NOTICES.txt',
   'finder',
   'lv426',
   'pride',
@@ -37,6 +43,7 @@ const siteFiles = [
 ];
 
 execFileSync('npm', ['run', 'build:sandwich'], { cwd: rootDir, stdio: 'inherit' });
+execFileSync('npm', ['run', 'build:form'], { cwd: rootDir, stdio: 'inherit' });
 
 fs.rmSync(blogSiteDir, { recursive: true, force: true });
 execFileSync('npm', ['run', 'build:site'], {
