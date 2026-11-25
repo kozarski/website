@@ -1,8 +1,8 @@
 # Bent Pixel Lab
 
-A web-based image glitch art creation tool that makes databending accessible and interactive. Create unique digital art effects through an interface with real-time previews.
+A browser-based glitch art and databending studio inspired by early-2000s desktop media players. Every image, hex byte, animated GIF, and stereo WAV file is processed 100% locally in your browser with zero uploads.
 
-Built with standard JavaScript and HTML5 Canvas. This project aims to make often experimental techniques accessible while honoring the artistic and technical heritage of glitch art.
+Built with vanilla HTML, CSS, ES modules, HTML5 Canvas, and the Web Audio API. This project aims to make experimental databending techniques accessible and understandable while honoring the artistic and technical heritage of glitch art.
 
 Special thanks to the global glitch art community for openly sharing techniques, tools, and knowledge that made this project possible.
 
@@ -10,105 +10,77 @@ Special thanks to the global glitch art community for openly sharing techniques,
 
 ## Features
 
-- **Classic Glitch Effects**
-  - Bit Shift: Digital corruption artifacts through bit manipulation
-  - Data Offset: File corruption simulation with data displacement
-  - RGB Split: Chromatic aberration effects
-  - Scanlines: CRT and VHS-style artifacts
-  - Path Sort: Organic distortions following image contours
-  - Seed Growth: Expanding distortion patterns from bright points
-  - Pixel Sort: Brightness-based pixel organization
+- **7-Band Pixel Equalizer (Effects)**
+  - Sequential effect chain with vertical tactile faders, scroll-wheel support, and Paint-Across curve drawing across all 7 bands
+  - Bit Shift, Data Offset, RGB Split, Scanlines, Path Sort, Seed Growth, and Pixel Sort
+  - Non-destructive Bypass switch, Shuffle randomizer, 12 built-in presets, persistent custom presets in `localStorage`, and shareable `#eq=` URL hashes
 
-- **Grid-Based Effects**
-  - Pixel Flow: Directional pixel displacement
-  - Vortex Warp: Spiral distortion patterns
-  - Crystal Shatter: Fragmented displacement effect
-  - Ripple Wave: Wavelike distortion patterns
-  - Neon Pulse: Brightness-based glow effects
-  - Prism Split: Color channel separation effects
+- **3x3 Spatial Grid**
+  - Click or drag directly across the canvas to apply localized effects to individual 3x3 regions
+  - 6 stackable grid processors: Pixel Flow, Vortex, Shatter, Ripple, Neon Pulse, and Prism Split
 
-- **Audio Visualization**
-  - Playback of image data to audio
-  - Playback controls
+- **Native JPEG Hex Editor**
+  - Inspect and edit the live compressed bytes of a real JPEG stream with automatic segment parsing (`SOI`, `APP`, `DQT`, `SOF0`, `DHT`, `SOS`, `Scan Data`, `EOI`)
+  - Header Lock keeps edits inside safe picture scan data, or toggle it off to trigger and recover from real decode faults with one-click Header Repair
+  - Built-in Transpose, Invert, and Smear databending operators plus a live horizontal scanline probe across the canvas
 
-- **Preset System**
-  - Built-in effect presets
-  - Save and manage custom presets
-  - Share preset configurations
+- **Animated GIF89a Export**
+  - Pure-JavaScript GIF89a encoder with 256-color Median Cut quantization, LZW compression, and looping `NETSCAPE2.0` animation
+  - Four live-preview animation modes (Sweep, Pulse, Hex Drift, Strobe) with adjustable frame count (6-20) and playback speed (4-20 FPS)
 
-- **User Interface**
-  - Dark/Light theme support
-  - Intuitive slider controls
-  - Real-time preview updates
-  - Responsive design
+- **Image Sonifier & 16-Bit Stereo WAV Export**
+  - Translates bent pixels into live 44.1 kHz stereo Web Audio playback with a synesthetic scan playhead across the artwork
+  - Clickable glowing LCD spectrum analyzer cycling through Bars, Mirror, and Wave visualizers
+  - Pure-JavaScript 16-bit Stereo PCM RIFF/WAVE encoder (`Save WAV` or `File -> Export Audio (.wav)`)
+
+- **Desktop Window Rig & 5 Color Themes**
+  - Draggable desktop windows (`Canvas`, `Sound`, `Pixel Studio`, and floating `Field Guide`) with 16px magnetic edge snapping, Windowshade collapse (`_` or titlebar double-click), and one-click layout reset
+  - 5 authentic Winamp-inspired Color Themes (`Classic Silver`, `Carbon Dark`, `Alpine Olive`, `Amber CRT`, `Classic Green`) persisted in `localStorage`
+  - Responsive 2-column tablet layout and single-column mobile stack with an adaptive 4-byte-per-row Hex Editor
+
+- **Live Learning Bar & Field Guide**
+  - Fixed-height contextual Learning Bar explaining every slider, grid effect, hex segment, and export tool in plain language as you explore
+  - Floating Field Guide with an interactive clickable JPEG Anatomy Strip that jumps straight to matching bytes in the Hex Editor, a 1965-2012 glitch art timeline, and live Guided Recipes
+
+- **Workflow & Export**
+  - 3 built-in high-contrast procedural artworks (`01 Dessau`, `02 Alpine Ridge`, `03 Chroma Prism`), drag-and-drop image loading, and `Cmd/Ctrl+V` clipboard paste
+  - 25-step unified Undo/Redo (`Cmd/Ctrl+Z`, `Cmd/Ctrl+Shift+Z`)
+  - Dual-mode Compare: hold `Space` or press the canvas to peek at the original, or drag horizontally in Effects/Hex mode for a live `Original | Bent` Split Curtain
+  - Export PNG, JPG (preserving raw mutated JPEG bytes in Hex mode), animated GIF, stereo WAV, or copy PNG directly to the clipboard
 
 ## Getting Started
 
-### Local Project Prerequisites
-- Safari and Firefox Tested
-- Support for HTML5 Canvas
-- Support for Web Audio API
+### Prerequisites
+- Any modern browser with HTML5 Canvas, ES Modules, and Web Audio API support (Safari, Chrome, Firefox)
 
-### Installation
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   cd pixel
-   ```
+### Running Locally
+Because the studio loads native ES modules (`<script type="module">`), serve the directory over a local HTTP server:
 
-2. Open `index.html` in a web browser or serve using a local server:
-   ```bash
-   # Using Python 3
-   python -m http.server 8000
-   
-   # Using Node.js
-   npx serve
-   ```
+```bash
+# From the repository root (serves /fonts/ and /pixel/)
+python3 -m http.server 8000
+```
 
-3. Access the application at `http://localhost:8000`
-
-## Usage
-
-1. **Upload an Image**
-   - Click "Choose Photo" or drag and drop an image
-   - Supported formats: PNG, JPEG, GIF
-
-2. **Apply Effects**
-   - Use sliders to adjust classic effects
-   - Click grid cells to apply localized effects
-   - Combine multiple effects for layered results
-
-3. **Save Your Work**
-   - Click "Save" to download the processed image
-   - Save custom presets for later use (session only currently, sorry)
+Then open `http://localhost:8000/pixel/`.
 
 ## Effect Descriptions
 
 ### Classic Effects
+- **Bit Shift**: Rotates the bits inside each RGB color byte sideways, causing hues to wrap like misread video RAM.
+- **Offset**: Slides raw pixel memory forward with alternating band shear, recreating frame-buffer shifts and VHS tracking slip.
+- **RGB Split**: Separates red, green, and blue channels diagonally like misaligned CRT electron beams.
+- **Scanlines**: Darkens alternating horizontal lines with subtle signal jitter to mimic vintage CRT displays.
+- **Path Sort**: Sorts pixels by brightness inside sliding horizontal tiles for woven contour textures.
+- **Seed Growth**: Identifies bright highlight pixels as seeds and blooms their color outward across neighbors.
+- **Pixel Sort**: Sorts horizontal pixel spans below a brightness threshold dark-to-light for painterly streaks.
 
-- **Bit Shift**: Shifts the bits of each color channel, creating digital corruption artifacts. This effect simulates data corruption by manipulating the binary data of the image.
-
-- **Data Offset**: Displaces chunks of image data, creating a "broken" look. This effect simulates file corruption by moving blocks of pixel data.
-
-- **RGB Split**: Separates the red, green, and blue color channels vertically. Creates a chromatic aberration look similar to old CRT displays.
-
-- **Scanlines**: Adds horizontal scan lines and subtle distortion. Mimics the look of old CRT displays and VHS tapes.
-
-- **Path Sort**: Sorts pixels along paths of least resistance in the image. Creates organic-looking distortions that follow natural contours.
-
-- **Seed Growth**: Creates organic distortions that grow from bright points in the image. Identifies bright areas as "seeds" and grows distortion patterns outward.
-
-- **Pixel Sort**: Sorts pixels based on brightness within segments. Creates long streaks by organizing pixels in vertical bands.
-
-### Grid Effects
-
-- **Pixel Flow**: Creates directional movement of pixels within the selected grid cell.
-- **Vortex Warp**: Generates a spiral distortion effect centered on the grid cell.
-- **Crystal Shatter**: Fragments and displaces the image in a crystalline pattern.
-- **Ripple Wave**: Produces wave-like distortions radiating from the center.
-- **Neon Pulse**: Enhances bright areas with a glowing effect.
-- **Prism Split**: Separates and shifts color channels in various directions.
-
+### 3x3 Grid Effects
+- **Pixel Flow**: Displaces pixels outward along smooth sine-wave currents inside each active cell.
+- **Vortex**: Twists pixels around the zone center using polar coordinate warping.
+- **Shatter**: Splits each active tile into jagged offset shards with chromatic edge boost.
+- **Ripple**: Radiates concentric sine waves outward from the tile center.
+- **Neon Pulse**: Boosts mid-tones and edges with a glowing gamma curve.
+- **Prism Split**: Samples red, green, and blue at three opposing radial angles around the zone center.
 
 ## License
 
@@ -125,17 +97,10 @@ This project stands on the shoulders of pioneers in glitch art and databending:
 - **Jamie Fenton & Raul Zaritsky** (1978) - Created "Digital TV Dinner", a groundbreaking early example of intentional video manipulation
 - **JODI** (Joan Heemskerk & Dirk Paesmans) - Pioneered net.art and early digital glitch aesthetics in the 1990s
 - **Kim Cascone** (2000) - Coined "post-digital" aesthetics and explored glitch in computer music
-- **Rosa Menkman** - Author of the "Glitch Studies Manifesto" and "The Glitch Moment(um)", fundamental texts in glitch art theory
-
+- **Rosa Menkman** (2010) - Author of the "Glitch Studies Manifesto" and "The Glitch Moment(um)", fundamental texts in glitch art theory
+- **Kim Asendorf** (2012) - Popularized brightness-interval Pixel Sorting in digital glitch art
 
 #### Shoutouts
 - Michael Betancourt's "Glitch Art in Theory and Practice"
 - Rosa Menkman's research on glitch aesthetics
 - GLI.TC/H community
-
-
-## TODO
-
-- GIF creation and exporting
-- Audio exporting
-- HEX Editor
