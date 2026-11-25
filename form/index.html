@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Form - Corey Kozarski</title>
+  <meta name="description" content="Sculpt clay, liquid chrome, and blown glass in a pure studio space using your pointer or local browser hand tracking.">
+  <link rel="canonical" href="https://www.coreykozarski.com/form/">
+  <link rel="icon" href="/images/copyleft.png" type="image/png">
+  <meta property="og:title" content="Form - Corey Kozarski">
+  <meta property="og:description" content="Sculpt clay, liquid chrome, and blown glass in a pure studio space using local hand tracking or your pointer.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.coreykozarski.com/form/">
+  <meta property="og:site_name" content="Corey Kozarski">
+  <meta property="og:image" content="https://www.coreykozarski.com/images/social_banner.png?v=2026-09">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Corey Kozarski, London. Bold lettering on a light dot grid, with Hello circled in red.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Form - Corey Kozarski">
+  <meta name="twitter:description" content="Sculpt clay, liquid chrome, and blown glass in a pure studio space.">
+  <meta name="twitter:image" content="https://www.coreykozarski.com/images/social_banner.png?v=2026-09">
+  <meta name="twitter:image:alt" content="Corey Kozarski, London. Bold lettering on a light dot grid, with Hello circled in red.">
+  <link rel="preload" href="/fonts/zodiak-variable.fbc0b605217b.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/jetbrains-mono-regular.2dc43470e34a.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="studio" aria-label="Form 3D sculpting studio">
+    <canvas id="studioCanvas"></canvas>
+    <canvas id="handOverlay" aria-hidden="true"></canvas>
+
+    <!-- Top-left editorial wordmark -->
+    <header class="corner top-left">
+      <h1 class="wordmark">Form</h1>
+    </header>
+
+    <!-- Top-right quiet studio utilities with hairline action icons -->
+    <nav class="corner top-right ui-bar util-bar" aria-label="History and export">
+      <button id="undoBtn" type="button" class="text-btn util-btn util-undo" title="Undo (Cmd+Z)" disabled>
+        <svg class="util-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5.2 4.4 2.5 7.1l2.7 2.7"/>
+          <path d="M2.8 7.1h6.4a3.6 3.6 0 1 1 0 7.2H6.4"/>
+        </svg>
+        <span>UNDO</span>
+      </button>
+      <button id="resetBtn" type="button" class="text-btn util-btn util-reset" title="Reset sphere (R)">
+        <svg class="util-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M13 8a5 5 0 1 1-1.35-3.42"/>
+          <path d="M13 2.8v2.7h-2.7"/>
+        </svg>
+        <span>RESET</span>
+      </button>
+      <button id="saveBtn" type="button" class="text-btn util-btn util-dl" title="Download studio PNG">
+        <svg class="util-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M8 2.6v7.4"/>
+          <path d="M5.2 7.4 8 10.2l2.8-2.8"/>
+          <path d="M3 13h10"/>
+        </svg>
+        <span>PNG</span>
+      </button>
+      <button id="exportBtn" type="button" class="text-btn util-btn util-dl" title="Download 3D model (.glb)">
+        <svg class="util-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M8 2.6v7.4"/>
+          <path d="M5.2 7.4 8 10.2l2.8-2.8"/>
+          <path d="M3 13h10"/>
+        </svg>
+        <span>GLB</span>
+      </button>
+    </nav>
+
+    <!-- Transient camera status (loading or error only) -->
+    <div id="statusLine" class="status-line" role="status" aria-live="polite" hidden></div>
+
+    <!-- Bottom-left material selector -->
+    <nav class="corner bottom-left ui-bar" role="group" aria-label="Material">
+      <button type="button" class="text-btn is-active" data-material="clay" aria-pressed="true" title="Clay (1)">CLAY</button>
+      <button type="button" class="text-btn" data-material="chrome" aria-pressed="false" title="Chrome (2)">CHROME</button>
+      <button type="button" class="text-btn" data-material="glass" aria-pressed="false" title="Glass (3)">GLASS</button>
+    </nav>
+
+    <!-- Bottom-center sculpt mode, brush size, mirror -->
+    <nav class="corner bottom-center ui-bar" aria-label="Sculpt controls">
+      <button type="button" class="text-btn is-active" data-tool="sculpt" aria-pressed="true" title="Push, pull, and shape in 3D">SCULPT</button>
+      <button type="button" class="text-btn" data-tool="smooth" aria-pressed="false" title="Smooth surface">SMOOTH</button>
+      <span class="sep" aria-hidden="true">/</span>
+      <button type="button" class="text-btn size-text size-s" data-size="0.26" aria-pressed="false" title="Small brush ([)">S</button>
+      <button type="button" class="text-btn size-text size-m is-active" data-size="0.42" aria-pressed="true" title="Medium brush">M</button>
+      <button type="button" class="text-btn size-text size-l" data-size="0.62" aria-pressed="false" title="Large brush (])">L</button>
+      <span class="sep" aria-hidden="true">/</span>
+      <button id="symBtn" type="button" class="text-btn mirror-btn no-dot" aria-pressed="false" title="Mirror symmetry (M)">
+        <svg class="mirror-mark" viewBox="0 0 24 10" fill="none" aria-hidden="true">
+          <g class="mirror-left">
+            <circle cx="5.5" cy="5" r="4" stroke="currentColor" stroke-width="1"/>
+            <circle cx="5.5" cy="5" r="1.45" fill="currentColor"/>
+          </g>
+          <g class="mirror-right">
+            <circle cx="18.5" cy="5" r="4" stroke="currentColor" stroke-width="1"/>
+            <circle cx="18.5" cy="5" r="1.45" fill="currentColor"/>
+          </g>
+        </svg>
+        <span>MIRROR</span>
+      </button>
+    </nav>
+
+    <!-- Bottom-right local hand mold & sound -->
+    <nav class="corner bottom-right ui-bar" aria-label="Hand mold and audio">
+      <button id="pipShowBtn" type="button" class="text-btn" title="Show hand mold preview" hidden>PREVIEW</button>
+      <button id="camBtn" type="button" class="text-btn cam-btn" aria-pressed="false" title="Toggle local hand-tracked sculpting">
+        <span class="cam-dot" aria-hidden="true"></span>
+        <span>HAND MOLD</span>
+      </button>
+      <button id="soundBtn" type="button" class="text-btn is-active" aria-pressed="true" title="Toggle subtle studio audio">SOUND</button>
+    </nav>
+
+    <!-- Local-only privacy confirmation before requesting browser camera access -->
+    <aside id="camNotice" class="cam-notice" role="dialog" aria-labelledby="camNoticeTitle" hidden>
+      <h2 id="camNoticeTitle" class="cam-notice-title">Hand mold</h2>
+      <p class="cam-notice-copy">Uses your camera locally in the browser to track your hands. Everything runs offline - no video or data ever leaves your device.</p>
+      <div class="cam-notice-actions">
+        <button id="camAllowBtn" type="button" class="text-btn is-active no-dot">PROCEED</button>
+        <button id="camCancelBtn" type="button" class="text-btn no-dot">CANCEL</button>
+      </div>
+    </aside>
+
+    <!-- Larger monochrome corner hand monitor with live pose guide (shown when Hand Mold is on) -->
+    <aside id="pipWrap" class="pip-wrap" aria-label="Local hand tracker preview" hidden>
+      <canvas id="pipCanvas" width="320" height="180"></canvas>
+      <div class="pip-bar">
+        <span class="pip-meta">LOCAL · OFFLINE</span>
+        <span id="pipLabel" class="pip-state">SHOW HAND</span>
+        <button id="pipHideBtn" type="button" class="pip-hide" title="Hide preview">HIDE</button>
+      </div>
+      <ul class="pose-guide" aria-label="Hand pose guide">
+        <li class="pose-row" data-pose="hover">
+          <span class="pose-name">
+            <svg class="pose-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M8 8.5V3.2a.8.8 0 1 1 1.6 0v4.8"/>
+              <path d="M9.6 4.8a.8.8 0 1 1 1.6 0v3.7"/>
+              <path d="M11.2 6.2a.8.8 0 1 1 1.6 0v3.5c0 2.5-1.7 4.3-4.2 4.3h-.5c-1.8 0-3-.8-3.8-2.4L2.9 9a.9.9 0 0 1 1.5-1l1.9 1.6V4.2a.8.8 0 1 1 1.7 0v4.3"/>
+            </svg>
+            <span>Open hand</span>
+          </span>
+          <span class="pose-action">Aim</span>
+        </li>
+        <li class="pose-row" data-pose="sculpt">
+          <span class="pose-name">
+            <svg class="pose-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3.2 5.4c1.4-1.6 3.5-1.6 4.8.6"/>
+              <path d="M3.2 10.6c1.4 1.6 3.5 1.6 4.8-.6"/>
+              <circle cx="8.6" cy="8" r="1.4"/>
+              <path d="M12.2 5.8 14 8l-1.8 2.2"/>
+            </svg>
+            <span>Pinch form</span>
+          </span>
+          <span class="pose-action">Push / pull</span>
+        </li>
+        <li class="pose-row" data-pose="orbit">
+          <span class="pose-name">
+            <svg class="pose-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12.6 8a4.6 4.6 0 1 1-1.4-3.3"/>
+              <path d="M12.6 2.8v2.4h-2.4"/>
+              <circle cx="8" cy="8" r="1.1"/>
+            </svg>
+            <span>Pinch space</span>
+          </span>
+          <span class="pose-action">Turn</span>
+        </li>
+        <li class="pose-row" data-pose="zoom">
+          <span class="pose-name">
+            <svg class="pose-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="6.2" cy="8" r="1.2"/>
+              <circle cx="9.8" cy="8" r="1.2"/>
+              <path d="M3.6 6.2 1.8 8l1.8 1.8"/>
+              <path d="M12.4 6.2 14.2 8l-1.8 1.8"/>
+            </svg>
+            <span>Two pinches</span>
+          </span>
+          <span class="pose-action">Zoom</span>
+        </li>
+      </ul>
+    </aside>
+
+    <noscript>
+      <div class="noscript">Enable JavaScript to use Form.</div>
+    </noscript>
+  </main>
+
+  <script src="app.bundle.js"></script>
+</body>
+</html>
